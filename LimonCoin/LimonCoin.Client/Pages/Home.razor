@@ -1,0 +1,179 @@
+﻿@page "/"
+@using Blazored.LocalStorage
+@using LimonCoin.Shared
+@using Microsoft.AspNetCore.SignalR.Client
+
+@rendermode InteractiveAutoWithoutPrerender
+
+@inject IJSRuntime js
+@inject NavigationManager navManager
+@inject HttpClient httpClient
+
+<PageTitle>Home</PageTitle>
+
+<div class="text-center">
+    <div style="padding-top: 6%; padding-bottom: 6%; padding-left: 4%; padding-right: 4%;">
+        <div>
+            <div style="gap: 10px;" class="d-flex justify-content-center">
+                <img class="fade-in" src="images/emojis/small_coin.svg" />
+                <h1>@((lastUpdate.Coins + initializingCoins).ToString("#,0"))</h1>
+            </div>
+
+            <div>
+                <h3 class="grayed-out">$ @usdCoins USD</h3>
+            </div>
+
+            <div style="gap: 5px;" class="d-flex justify-content-center text-center">
+                <img style="margin-top: 2px;" width="18" height="20" src="images/cups/@(league.ToProgramName()).png" />
+                <a href="@($"/league/{(int)league}?UserCoins={lastUpdate.Coins}&Energy{lastUpdate.Energy}&MaxEnergy={lastUpdate.MaxEnergy}")" style="text-decoration: none; color: white;">@league.ToDisplayName() ></a>
+            </div>
+        </div>
+    </div>
+
+    <div style="padding-left: 4%; padding-right: 4%;">
+        <img class="tiltingParent pop" @onclick=Click style="width: 85%;" src="images/home/coin.png" />
+    </div>
+
+    <div class="bottom" style="padding-top: 6%; padding-left: 4%; padding-right: 4%;">
+        <a href="/withdraw?UserCoins=@lastUpdate.Coins&Energy=@lastUpdate.Energy&MaxEnergy=@lastUpdate.MaxEnergy" style="margin-top: 18px; margin-bottom: 18px;">
+            <img width="135" height="48" src="images/buttons/withdraw_button.svg" />
+        </a>
+
+        <div class="d-flex" style="margin-bottom: 18px; justify-content: space-between;">
+            <div class="d-flex" style="margin-top: 3%;">
+                <img height="50" width="50" src="images/emojis/energy.png" />
+                <div class="energy-container">
+                    <h3>@lastUpdate.Energy</h3>
+                    <h6 style="margin-top: -10px;" class="grayed-out">/@lastUpdate.MaxEnergy</h6>
+                </div>
+            </div>
+
+            <div class="group-box">
+                <div class="group-box-container">
+                    <a href="/friends?UserCoins=@lastUpdate.Coins&Energy=@lastUpdate.Energy&MaxEnergy=@lastUpdate.MaxEnergy" class="group-box-elements" style="text-decoration: none; color: white;">
+                        <img width="28" height="28" src="images/emojis/bear.png" />
+                        Друзья
+                    </a>
+                    <div class="group-box-line" />
+                    <a href="/tasks?UserCoins=@lastUpdate.Coins&Energy=@lastUpdate.Energy&MaxEnergy=@lastUpdate.MaxEnergy" class="group-box-elements" style="text-decoration: none; color: white;">
+                        <img width="28" height="28" src="images/emojis/money.png" />
+                        Задания
+                    </a>
+                    <div class="group-box-line" />
+                    <a href="/boosts?UserCoins=@lastUpdate.Coins&Energy=@lastUpdate.Energy&MaxEnergy=@lastUpdate.MaxEnergy" class="group-box-elements" style="text-decoration: none; color: white;">
+                        <img width="28" height="28" src="images/emojis/rocket.png" />
+                        Буст
+                    </a>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="d-flex justify-content-center">
+            <ProgressBar EnergyPercent=@energyPercent Color="#FBB92D" Gradient="linear-gradient(270deg, rgba(255, 255, 255, 0.80) 0%, rgba(255, 255, 255, 0.00) 100%)" />
+        </div>
+    </div>
+</div>
+
+<script>
+    tilt();
+    expandWebApp();
+</script>
+
+@code {
+    private static readonly InteractiveAutoRenderMode InteractiveAutoWithoutPrerender = new InteractiveAutoRenderMode(false);
+
+    [SupplyParameterFromQuery]
+    public long UserCoins { get; init; }
+
+    [SupplyParameterFromQuery]
+    public int Energy { get; init; }
+
+    [SupplyParameterFromQuery]
+    public int MaxEnergy { get; init; }
+
+    private ulong initializingCoins;
+
+    private HubConnection hub;
+
+    private UserDTO lastUpdate = new();
+
+    private float energyPercent => ((float)lastUpdate.Energy / (float)lastUpdate.MaxEnergy) * 100f;
+
+    private decimal usdCoins => lastUpdate.Coins / 100_000m;
+
+    private LeagueType league => LeagueTypeExtensions.GetLeagueFromCoins(lastUpdate.Coins);
+
+    private long telegramId;
+
+    private DateTime lastTimeClicked = DateTime.Now;
+
+    public async Task Click()
+    {
+        if(lastTimeClicked.AddMilliseconds(80) > DateTime.Now)
+        {
+            return;
+        }
+
+        if (hub.State != HubConnectionState.Connected)
+        {
+            initializingCoins++;
+        }
+        else
+        {
+            await hub.SendAsync("Click", telegramId);
+        }
+
+        lastTimeClicked = DateTime.Now;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        lastUpdate = new()
+        {
+            Coins = (ulong)UserCoins,
+            Energy = (uint)Energy,
+            MaxEnergy = (uint)MaxEnergy
+        };
+
+        hub = new HubConnectionBuilder()
+            .WithUrl(navManager.BaseUri + "api/hub/clicker")
+            .WithAutomaticReconnect()
+            .Build();
+
+        hub.On<UserDTO>("ReceiveUpdate", async update =>
+        {
+            lastUpdate = update;
+            StateHasChanged();
+        });
+
+        hub.On<string>("ReceivedNotification", async notificationMessage =>
+        {
+            await js.InvokeVoidAsync("showToast", notificationMessage);
+        });
+
+        await hub.StartAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        telegramId = await js.InvokeAsync<long>("getUserId");
+
+        await hub.SendAsync("Register", telegramId);
+
+        _ = Task.Run(async () =>
+        {
+            for (ulong i = 0; i < initializingCoins; i++)
+            {
+                await hub.SendAsync("Click", telegramId);
+                initializingCoins--;
+                await Task.Delay(100);
+            }
+        });
+    }
+}

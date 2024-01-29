@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="LimonCoin.styles.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <HeadOutlet />
+</head>
+
+<body>
+    <Routes />
+    <script src="_framework/blazor.web.js"></script>
+    <script src="jquery/jquery.min.js"></script>
+    <script src="tiltify/tiltify.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+        function tilt()
+        {
+            let tiltify = new Tiltify(
+                $(".tiltingParent"),
+                {
+                    max: 50,
+                    perspective: 1000,
+                    speed: 300
+                }
+            );
+        }
+
+        function showToast(message)
+        {
+            Toastify({
+                text: message,
+                duration: 2000,
+                newWindow: true,
+                close: true,
+                gravity: "bottom",
+                position: "center",
+                stopOnFocus: true,
+                style: {
+                    background: "#000000",
+                    opacity: 0.7,
+                    "border-radius": "12px"
+                },
+                onClick: function () { }
+            }).showToast();
+        }
+
+        function openLink(link)
+        {
+            let webApp = window.Telegram.WebApp;
+
+            webApp.openLink(link);
+        }
+
+        function getUserId()
+        {
+            // return 1066868132;
+
+            let webApp = window.Telegram.WebApp;
+
+            let userId = webApp.initDataUnsafe.user.id;
+
+            return userId;
+        }
+
+        function backButtonToggle(query)
+        {
+            let webApp = window.Telegram.WebApp;
+
+            webApp.BackButton.onClick(() => onBackButton(query));
+
+            webApp.BackButton.show();
+        }
+
+        function onBackButton(query)
+        {
+            let webApp = window.Telegram.WebApp;
+
+            window.location.href = '/' + query;
+
+            webApp.BackButton.hide();
+        }
+
+        function closeWebApp()
+        {
+            let webApp = window.Telegram.WebApp;
+
+            webApp.close();
+        }
+
+        function isMobile()
+        {
+            return navigator.userAgentData.mobile;
+        }
+
+        function expandWebApp()
+        {
+            let webApp = window.Telegram.WebApp;
+
+            webApp.expand();
+        }
+
+        function openTelegram(url)
+        {
+            let webApp = window.Telegram.WebApp;
+
+            webApp.openTelegramLink(url);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,109 @@
+﻿@page "/stats"
+@using LimonCoin.Shared
+
+@rendermode InteractiveWebAssembly
+
+@inject IJSRuntime js
+@inject HttpClient httpClient
+
+<div class="text-center" style="padding-top: 30%; padding-bottom: 6%; padding-left: 10%; padding-right: 10%;">
+    <h6 class="grayed-out">Общий баланс Limoncoin-ов</h6>
+
+    <div class="d-flex justify-content-center gap-2">
+        <img class="fade-in" src="images/emojis/small_coin.svg" />
+        <h2>@totalCoins.ToString("#,0")</h2>
+    </div>
+
+    <div class="text-start" style="display: flex; align-items: center; margin-top: 50px;">
+        <ul class="avatar-container" style="padding: 0; margin-top: revert; height: 40px;">
+            @for (int i = 0; i < 3 && users.Count >= 3; i++)
+            {
+                <li class="avatar fade-in"><img class="avatar-image h-100" src="avatars/@(users[i].TelegramId).jpg"></li>
+            }
+        </ul>
+
+        <div style="margin-left: 40px;">
+            <h4 style="font-weight: 900;">@totalUsers.ToString("#,0")</h4>
+            <h6 class="grayed-out" style="font-weight: 400; font-family: Arial; margin-top: -6px;">Игроков</h6>
+        </div>
+    </div>
+    
+    <div class="w-100 mt-2 mb-2" style="background-color: mediumpurple; opacity: 0.2; height: 1px;"></div>
+
+    <div class="text-start" style="display: flex; align-items: center;">
+        <ul class="avatar-container" style="padding: 0; margin-top: revert; height: 40px;">
+            @for (int i = 3; i < 6 && users.Count >= 6; i++)
+            {
+                <li class="avatar fade-in"><img class="avatar-image h-100" src="avatars/@(users[i].TelegramId).jpg"></li>
+            }
+        </ul>
+
+        <div style="margin-left: 40px;">
+            <h4 style="font-weight: 900;">@dailyUsers.ToString("#,0")</h4>
+            <h6 class="grayed-out" style="font-weight: 400; font-family: Arial; margin-top: -6px;">Игроков в день</h6>
+        </div>
+    </div>
+    
+    <div class="w-100 mt-2 mb-2" style="background-color: mediumpurple; opacity: 0.2; height: 1px;"></div>
+
+    <div class="text-start" style="display: flex; align-items: center;">
+        <ul class="avatar-container" style="padding: 0; margin-top: revert; height: 40px;">
+            @for (int i = 6; i < 9 && users.Count >= 9; i++)
+            {
+                <li class="avatar fade-in"><img class="avatar-image h-100" src="avatars/@(users[i].TelegramId).jpg"></li>
+            }
+        </ul>
+
+        <div style="margin-left: 40px;">
+            <h4 style="font-weight: 900;">@onlineUsers.ToString("#,0")</h4>
+            <h6 class="grayed-out" style="font-weight: 400; font-family: Arial; margin-top: -6px;">Игроков онлайн</h6>
+        </div>
+    </div>
+</div>
+
+<div class="bottom" style="padding-left: 8%; padding-right: 8%; margin-bottom: 20px;">
+    <a href="/friends">
+        <button class="btn btn-info w-100 yellow-button">Пригласить друга</button>
+    </a>
+</div>
+
+<link rel="stylesheet" href="css/menu.css" />
+@code {
+    [SupplyParameterFromQuery]
+    public long UserCoins { get; init; }
+
+    [SupplyParameterFromQuery]
+    public int Energy { get; init; }
+
+    [SupplyParameterFromQuery]
+    public int MaxEnergy { get; init; }
+
+    decimal totalCoins;
+    long totalUsers;
+    long dailyUsers;
+    long onlineUsers;
+
+    List<UserDTO> users = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        totalCoins = await httpClient.GetFromJsonAsync<decimal>("api/user/coinsCount");
+        dailyUsers = await httpClient.GetFromJsonAsync<long>("api/user/dailyCount");
+        totalUsers = await httpClient.GetFromJsonAsync<long>("api/user/count");
+        onlineUsers = await httpClient.GetFromJsonAsync<long>("api/user/onlineCount");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        await js.InvokeVoidAsync("backButtonToggle", $"?UserCoins={UserCoins}&Energy={Energy}&MaxEnergy={MaxEnergy}");
+
+        users = await httpClient.GetFromJsonAsync<List<UserDTO>>($"api/user/top/week?leagueType=0");
+
+        StateHasChanged();
+    }
+}

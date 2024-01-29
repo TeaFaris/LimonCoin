@@ -1,0 +1,15 @@
+﻿@using System.Globalization
+<div class="progress-bar-container" style="--color: @Color;">
+    <div class="progress-bar" style="--width: @(EnergyPercent.ToString("#.###", CultureInfo.InvariantCulture))%; --gradient: @Gradient;" />
+</div>
+
+@code {
+    [Parameter]
+    public float EnergyPercent { get; init; }
+
+    [Parameter]
+    public string Color { get; init; }
+
+    [Parameter]
+    public string Gradient { get; init; }
+}

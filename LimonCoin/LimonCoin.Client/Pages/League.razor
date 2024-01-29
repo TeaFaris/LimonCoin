@@ -1,0 +1,121 @@
+﻿@page "/league/{leagueTypeId:int}"
+@using LimonCoin.Shared
+
+@rendermode InteractiveWebAssembly
+
+@inject NavigationManager navManager
+@inject IJSRuntime js
+@inject HttpClient httpClient
+
+<link rel="stylesheet" href="css/league.css" />
+
+<div class="text-center" style="padding-top: 6%; padding-bottom: 6%; padding-left: 4%; padding-right: 4%;">
+    <a href="/stats?UserCoins=@UserCoins&Energy=@Energy&MaxEnergy=@MaxEnergy" class="fade-in" style="padding-left: 15px; padding-right: 15px; border-radius: 30px; background-color: rgba(255, 255, 255, 0.6); height: 40px; display: flex; align-items: center; justify-content: space-around;">
+        <div class="h-100 w-100" style="display: flex; align-items: center; justify-content: start;">
+            <ul class="avatar-container" style="padding: 0; height: 70%; margin-top: revert;">
+                @for (int i = 0; i < 3 && users.Count >= 3; i++)
+                {
+                    <li class="avatar fade-in"><img class="avatar-image h-100" src="avatars/@(users[i].TelegramId).jpg"></li>
+                }
+            </ul>
+
+            <label style="color: black; margin-left: 18px;">@userCount.ToString("#,0") Limoncoiners</label>
+        </div>
+        
+        <label style="width: 20%; color: dimgrey;">Stats ></label>
+    </a>
+
+    <div class="d-flex mt-4" style="justify-content: space-between; margin-right: 4%; margin-left: 4%;">
+        <img @onclick="() => ChangeLeague(LeagueTypeId - 1)" src="images/arrow-right.svg" class="fade-in" />
+        <img src="images/cups/@(leagueType.ToProgramName()).png" class="fade-from-top" width="130" height="160" />
+        <img @onclick="() => ChangeLeague(LeagueTypeId + 1)" src="images/arrow-right.svg" class="fade-in" style="transform: rotate(180deg);" />
+    </div>
+
+    <h2 style="margin-top: 25px;">@leagueType.ToDisplayName() лига</h2>
+
+    @if(playerLeagueType == leagueType)
+    {
+        <div class="d-flex justify-content-center gap-2" style="margin-top: 20px;">
+            <h3 class="grayed-out">@UserCoins.ToString("#,0")</h3>
+            <h3 class="grayed-out">/</h3>
+            <h3 class="grayed-out">@playerLeagueType.GetMaxCoinsForLeague().ToString("#,0")</h3>
+        </div>
+        <div style="margin-top: 20px;">
+            <ProgressBar EnergyPercent=@leagueProgressPercent Color="rgba(255, 255, 255, 0.15)" Gradient="linear-gradient(270deg, #FFF8E2 0%, #FFA314 100%)" />
+        </div>
+    }
+    else
+    {
+        <h4 style="margin-top: 20px;" class="grayed-out">Начиная от @leagueType.GetMinCoinsForLeague().ToString("#,0") монет</h4>
+    }
+</div>
+
+<div class="bottom-absolute text-center" style="padding-top: 6%; padding-left: 4%; padding-right: 4%;">
+    <div class="d-flex justify-content-center gap-2">
+        <img class="fade-in" src="images/emojis/crown.png" height="25" width="25" />
+        <h3>Топ майнеров</h3>
+    </div>
+
+    <div style="margin-top: 5px;">
+        <BottomPanel LeagueType="@leagueType" />
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public long UserCoins { get; init; }
+
+    [SupplyParameterFromQuery]
+    public int Energy { get; init; }
+
+    [SupplyParameterFromQuery]
+    public int MaxEnergy { get; init; }
+
+    [Parameter]
+    public int LeagueTypeId { get; init; }
+
+    private long telegramId;
+
+    private long userCount;
+
+    private LeagueType leagueType => (LeagueType)LeagueTypeId;
+
+    private LeagueType playerLeagueType;
+
+    private float leagueProgressPercent;
+
+    List<UserDTO> users = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        userCount = await httpClient.GetFromJsonAsync<long>("api/user/count");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        await js.InvokeVoidAsync("backButtonToggle", $"?UserCoins={UserCoins}&Energy={Energy}&MaxEnergy={MaxEnergy}");
+
+        playerLeagueType = LeagueTypeExtensions.GetLeagueFromCoins((ulong)UserCoins);
+        leagueProgressPercent = (float)UserCoins / leagueType.GetMaxCoinsForLeague() * 100f;
+
+        users = await httpClient.GetFromJsonAsync<List<UserDTO>>($"api/user/top/week?leagueType=0");
+
+        StateHasChanged();
+    }
+
+
+    private async Task ChangeLeague(int leagueId)
+    {
+        if(leagueId < 0 || leagueId > 3)
+        {
+            return;
+        }
+
+        navManager.NavigateTo($"/league/{leagueId}?UserCoins={UserCoins}&Energy={Energy}&MaxEnergy={MaxEnergy}");
+    }
+}

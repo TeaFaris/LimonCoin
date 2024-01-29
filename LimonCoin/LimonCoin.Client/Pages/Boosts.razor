@@ -1,0 +1,102 @@
+﻿@page "/boosts"
+@using LimonCoin.Shared
+
+@rendermode InteractiveWebAssembly
+
+@inject IJSRuntime js
+
+<link rel="stylesheet" href="css/menu.css" />
+
+<div style="display: flex; justify-content: center; z-index: -1; pointer-events: none;">
+    <img style="position: fixed; margin-top: 12%;" src="images/starry-background-1.svg" />
+</div>
+
+<div class="text-center" style="padding-top: 12%; padding-bottom: 6%; padding-left: 4%; padding-right: 4%;">
+    <h6 class="grayed-out">Ваш баланс</h6>
+
+    <div class="d-flex justify-content-center gap-2">
+        <img class="fade-in" src="images/emojis/small_coin.svg" />
+        <h1>@UserCoins</h1>
+    </div>
+
+    <h3 class="grayed-out">$ @usdCoins USD</h3>
+
+    <a href="/withdraw?UserCoins=@UserCoins&Energy=@Energy&MaxEnergy=@MaxEnergy">
+        <img style="margin-top: 20px;" height="48" src="images/buttons/withdraw_button.svg" />
+    </a>
+
+    <div class="d-flex justify-content-center mt-3">
+        <h2>Бусты</h2>
+    </div>
+
+    <div class="bottom-panel-boosts d-flex gap-4" style="margin-top: 5px; padding: 26px; flex-direction: column;">
+        <div class="d-flex">
+            <div class="boost-icon">
+                <img src="images/boosts/click.png" height="50" width="50" />
+            </div>
+            <div style="margin-left: 10px; margin-top: 3px; text-align: initial;" class="boost-texts">
+                <div class="d-flex gap-1">
+                    <h5>Мега тап</h5>
+                    <h6 style="margin-top: 4px;" class="grayed-out">(1 LVL)</h6>
+                </div>
+
+                <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">За 1 клик добавляется 8 монет вместо 3</div>
+
+                <h3 class="price-text" style="margin-top: -3px;">2499 руб.</h3>
+            </div>
+        </div>
+        <div class="d-flex">
+            <div class="boost-icon">
+                <img src="images/boosts/energy-restore.png" height="50" width="50" />
+            </div>
+            <div style="margin-left: 10px; margin-top: 3px; text-align: initial;" class="boost-texts">
+                <div class="d-flex gap-1">
+                    <h5>Быстрая зарядка</h5>
+                    <h6 style="margin-top: 4px;" class="grayed-out">(1 LVL)</h6>
+                </div>
+
+                <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">За 1 сек. прибавляется 5 заряда вместо 1</div>
+
+                <h3 class="price-text" style="margin-top: -3px;">2499 руб.</h3>
+            </div>
+        </div>
+        <div class="d-flex">
+            <div class="boost-icon">
+                <img src="images/boosts/energy-capacity.png" height="50" width="50" />
+            </div>
+            <div style="margin-left: 10px; margin-top: 3px; text-align: initial;" class="boost-texts">
+                <div class="d-flex gap-1">
+                    <h5>Лимит энергии</h5>
+                    <h6 style="margin-top: 4px;" class="grayed-out">(1 LVL)</h6>
+                </div>
+
+                <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">Лимит энергии 10000 вместо 3000</div>
+
+                <h3 class="price-text" style="margin-top: -3px;">2499 руб.</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public long UserCoins { get; init; }
+
+    [SupplyParameterFromQuery]
+    public int Energy { get; init; }
+
+    [SupplyParameterFromQuery]
+    public int MaxEnergy { get; init; }
+
+    private decimal usdCoins => UserCoins / 100_000m;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        await js.InvokeVoidAsync("backButtonToggle", $"?UserCoins={UserCoins}&Energy={Energy}&MaxEnergy={MaxEnergy}");
+    }
+}

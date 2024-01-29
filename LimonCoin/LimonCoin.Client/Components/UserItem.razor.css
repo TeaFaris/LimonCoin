@@ -1,0 +1,11 @@
+﻿.item-tab-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.item-tab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}

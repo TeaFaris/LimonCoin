@@ -1,0 +1,37 @@
+﻿@page "/adminpanel/tasks"
+
+@inject HttpClient httpClient
+
+@rendermode InteractiveAuto
+
+<link rel="stylesheet" href="css/menu.css" />
+
+<div class="text-center" style="padding-top: 12%; padding-bottom: 6%; padding-left: 4%; padding-right: 4%;">
+    <h1>Задание</h1>
+
+    <InputNumber @bind-Value=@taskNumber class="form-control mt-4" style="border-radius: 10px; background: rgba(255, 255, 255, 0.15); color: #FFF; border-width: 0px;" placeholder="Номер задания (1-2)" />
+    <InputText @bind-Value=@name class="form-control mt-3" style="border-radius: 10px; background: rgba(255, 255, 255, 0.15); color: #FFF; border-width: 0px;" placeholder="Название задания" />
+    <InputNumber @bind-Value=@reward class="form-control mt-3" style="border-radius: 10px; background: rgba(255, 255, 255, 0.15); color: #FFF; border-width: 0px;" placeholder="Награда" />
+    <InputNumber @bind-Value=@telegramChannelId class="form-control mt-3" style="border-radius: 10px; background: rgba(255, 255, 255, 0.15); color: #FFF; border-width: 0px;" placeholder="Id телеграм канала на который нужно подписаться (Необязательно)" />
+    <InputText @bind-Value=@link class="form-control mt-3" style="border-radius: 10px; background: rgba(255, 255, 255, 0.15); color: #FFF; border-width: 0px;" placeholder="Ссылка на переход (Необязательно)" />
+
+    <button class="btn btn-success mt-3" @onclick=ChangeTask>Изменить задание</button>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string Password { get; init; }
+
+    int? taskNumber;
+    string name;
+    int? reward;
+    long? telegramChannelId;
+    string link;
+
+    async Task ChangeTask()
+    {
+        var response = await httpClient.PostAsync($"api/tasks/ct?password={Password}&taskId={taskNumber - 1}&name={name}&reward={reward}&telegramChannelId={telegramChannelId}&link={link}", null);
+
+        Console.WriteLine(response.StatusCode);
+    }
+}

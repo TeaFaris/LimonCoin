@@ -1,0 +1,71 @@
+﻿@using LimonCoin.Shared
+@inject HttpClient httpClient
+
+@rendermode InteractiveWebAssembly
+
+<div class="bottom-panel">
+    <div class="tabs">
+        <div class="tab-2">
+            <label for="tab2-1" style="font-weight: 900;">День</label>
+            <input id="tab2-1" name="tabs-two" type="radio" checked="checked">
+            <div class="tab-container gap-3">
+                @for (int i = 0; i < topDayUsers.Count; i++)
+                {
+                    var user = topDayUsers[i];
+
+                    var medalType = i switch
+                    {
+                        0 => UserItem.MedalType.Gold,
+                        1 => UserItem.MedalType.Silver,
+                        2 => UserItem.MedalType.Bronze,
+                        _ => UserItem.MedalType.None
+                    };
+
+                    <UserItem Username="@user.Username" Coins="@user.Coins" Medal="@medalType" AvatarUrl="@($"avatars/{user.TelegramId}.jpg")" />
+                }
+            </div>
+        </div>
+        <div class="tab-2">
+            <label for="tab2-2" style="font-weight: 900;">Неделя</label>
+            <input id="tab2-2" name="tabs-two" type="radio">
+            <div class="tab-container gap-3">
+                @for (int i = 0; i < topWeekUsers.Count; i++)
+                {
+                    var user = topWeekUsers[i];
+
+                    var medalType = i switch
+                    {
+                        0 => UserItem.MedalType.Gold,
+                        1 => UserItem.MedalType.Silver,
+                        2 => UserItem.MedalType.Bronze,
+                        _ => UserItem.MedalType.None
+                    };
+
+                    <UserItem Username="@user.Username" Coins="@user.Coins" Medal="@medalType" AvatarUrl="@($"avatars/{user.TelegramId}.jpg")" />
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public LeagueType LeagueType { get; init; }
+
+    private List<UserDTO> topDayUsers = new();
+    private List<UserDTO> topWeekUsers = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        var topWeekUsersTask = httpClient.GetFromJsonAsync<List<UserDTO>>($"api/user/top/week?leagueType={(int)LeagueType}");
+        topDayUsers = await httpClient.GetFromJsonAsync<List<UserDTO>>($"api/user/top/day?leagueType={(int)LeagueType}");
+        topWeekUsers = await topWeekUsersTask;
+
+        StateHasChanged();
+    }
+}

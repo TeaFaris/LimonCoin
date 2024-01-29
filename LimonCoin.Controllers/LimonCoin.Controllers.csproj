@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Telegram.Bot" Version="19.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LimonCoin.Data\LimonCoin.Data.csproj" />
+    <ProjectReference Include="..\LimonCoin.Hubs\LimonCoin.Hubs.csproj" />
+    <ProjectReference Include="..\LimonCoin.Shared\LimonCoin.Shared.csproj" />
+  </ItemGroup>
+  
+</Project>

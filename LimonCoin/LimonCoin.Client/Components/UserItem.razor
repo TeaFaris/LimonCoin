@@ -1,0 +1,43 @@
+﻿<div class="item-tab-container fade-in">
+    <div class="item-tab">
+        <img src="@medalImageSrc" height="30" width="30" />
+        <img src="@AvatarUrl" style="border-radius: 26px;" height="50" width="50" />
+    </div>
+    <div>
+        <div style="font-family: Arial; font-weight: 400; font-size: 18px; text-align: start;">@Username</div>
+        <div class="d-flex">
+            <img src="images/emojis/small_coin.svg" style="margin-right: 3px;" width="18" height="18" />
+            <div class="grayed-out" style="font-family: Arial; font-weight: 400; font-size: 14px;">@Coins.ToString("N0")</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Username { get; init; }
+
+    [Parameter]
+    public decimal Coins { get; init; }
+
+    [Parameter]
+    public MedalType Medal { get; init; }
+
+    [Parameter]
+    public string AvatarUrl { get; init; }
+
+    private string medalImageSrc => Medal switch
+    {
+        MedalType.None => "images/medals/none.png",
+        MedalType.Bronze => "images/medals/bronze.png",
+        MedalType.Silver => "images/medals/silver.png",
+        MedalType.Gold => "images/medals/gold.png",
+    };
+
+    public enum MedalType
+    {
+        None = 0,
+        Bronze = 1,
+        Silver = 2,
+        Gold = 3
+    }
+}

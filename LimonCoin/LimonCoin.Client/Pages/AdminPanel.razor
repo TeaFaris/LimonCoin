@@ -1,0 +1,81 @@
+﻿@page "/adminpanel"
+@using LimonCoin.Shared
+
+@rendermode InteractiveAuto
+
+@inject NavigationManager navManager
+@inject HttpClient httpClient
+
+<div class="text-center p-4">
+    <h1>Игроки:</h1>
+
+    <input @bind="@searchQuery" @bind:event="oninput" class="form-control" style="border-radius: 10px; background: rgba(255, 255, 255, 0.15); color: #FFF; border-width: 0px;" placeholder="Поиск" />
+
+    <button class="btn btn-info yellow-button mt-3" @onclick=Search>Искать</button>
+
+    <div class="w-100 h-100 gap-3 text-start mt-3" style="display: flex; flex-direction: column;">
+        @if(users is null)
+        {
+            <h1>Поиск...</h1>
+        }
+        else
+        {
+            @foreach (var user in users)
+            {
+                <div @onclick="@(() => navManager.NavigateTo($"/adminpanel/user/{user.TelegramId}"))" style="background-color: rgba(255, 255, 255, 0.3); display: inline-flex; padding: 10px; border-radius: 20px; align-items: center; justify-content: space-between; color: white; overflow: hidden;">
+                    <UserItem Username="@user.Username" Coins="@user.Coins" Medal="UserItem.MedalType.None" AvatarUrl="@($"avatars/{user.TelegramId}.jpg")" />
+                    <h3 style="margin-right: 20px;">></h3>
+                </div>
+            }
+        }
+    </div>
+
+    <br />
+    <br />
+    <br />
+    <br />
+</div>
+
+<div class="bottom p-3 position-fixed">
+    <a href="/adminpanel/tasks?Password=@Password">
+        <button class="btn btn-info w-100 yellow-button">Изменить задания</button>
+    </a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string Password { get; init; }
+
+    private List<UserDTO>? users = null;
+
+    string searchQuery;
+
+    private async void Search()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            users = await httpClient.GetFromJsonAsync<List<UserDTO>>("api/user/all?offset=0");
+            return;
+        }
+
+        users = null;
+
+        StateHasChanged();
+
+        users = await httpClient.GetFromJsonAsync<List<UserDTO>>($"api/user/search/{searchQuery}");
+
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        users = await httpClient.GetFromJsonAsync<List<UserDTO>>("api/user/all?offset=0");
+
+        StateHasChanged();
+    }
+}

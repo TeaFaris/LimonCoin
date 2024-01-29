@@ -1,0 +1,57 @@
+﻿@page "/adminpanel/user/{id:long}"
+@using LimonCoin.Shared
+
+@rendermode InteractiveAuto
+
+@inject HttpClient httpClient
+
+<div class="text-center p-5">
+    <div>
+        <h4>Телеграм юзернейм:</h4>
+        <h4>@@@user.Username</h4>
+    </div>
+
+    <div class="mt-4">
+        <h4>Монеты:</h4>
+        <h4>@user.Coins</h4>
+    </div>
+
+    <div class="mt-4">
+        <h4>Монет за день:</h4>
+        <h4>@user.CoinsThisDay</h4>
+    </div>
+
+    <div class="mt-4">
+        <h4>Монет за неделю:</h4>
+        <h4>@user.CoinsThisWeek</h4>
+    </div>
+
+    <div class="mt-4">
+        <h4>Макс. энергия:</h4>
+        <h4>@user.MaxEnergy</h4>
+    </div>
+
+    <div class="mt-4">
+        <h4>Энергия в секунду:</h4>
+        <h4>@user.EnergyPerSecond</h4>
+    </div>
+
+    <div class="mt-4">
+        <h4>Монет за клик:</h4>
+        <h4>@user.CoinsPerClick</h4>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public long Id { get; init; }
+
+    UserDTO user = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        user = await httpClient.GetFromJsonAsync<UserDTO>($"api/user/{Id}");
+
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,44 @@
+﻿.group-box {
+    display: inline-flex;
+    padding: 9px 18px 10px 16px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+    border: 1.5px solid #E08300;
+    background: linear-gradient(95deg, #FCC04C 0%, #FC911E 100%);
+    box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 0.25) inset;
+}
+
+.group-box-container {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.group-box-elements {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.group-box-line {
+    width: 0.5px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.40);
+}
+
+.energy-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+#coin {
+    cursor: pointer;
+}
+
+#plus-one {
+    font-size: 20px;
+    position: absolute;
+    display: none;
+}

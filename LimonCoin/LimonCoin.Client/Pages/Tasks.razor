@@ -1,0 +1,100 @@
+﻿@page "/tasks"
+@using LimonCoin.Models
+@using LimonCoin.Shared
+
+@rendermode InteractiveWebAssembly
+
+@inject IJSRuntime js
+@inject HttpClient httpClient
+
+<link rel="stylesheet" href="css/menu.css" />
+
+<div style="display: flex; justify-content: center; z-index: -1;">
+    <img class="w-100" style="position: fixed; padding: 8%;" src="images/starry-background-3.svg" />
+</div>
+
+<div class="text-center" style="padding-top: 16%; padding-bottom: 2%; padding-left: 4%; padding-right: 4%;">
+    <img src="images/home/coin.png" width="120" height="120" />
+
+    <h2 class="mt-3">Больше монет</h2>
+    
+    @foreach (var task in tasks)
+    {
+        if(!user.AwardedTasks.Contains(task.Id))
+        {
+            <div @onclick="async () => await CheckReward(task)" style="margin-top: 16px;" class="task-item fade-in">
+                <div class="d-flex" style="align-items: center;">
+                    <div class="icon-container">
+                        <img class="w-100 h-100" src=@task.ImagePathUrl />
+                    </div>
+                    <div style="margin-left: 12px; margin-top: 6px;">
+                        <h6 style="font-weight: 400; font-family: Arial; text-align: start;">@task.Name</h6>
+                        <h6 class="grayed-out" style="font-weight: 400; font-family: Arial; margin-top: -4px; text-align: start;">+@task.Reward.ToString("#,0") для Вас</h6>
+                    </div>
+                </div>
+
+                <img src="images/arrow-right.svg" style="transform: rotate(180deg);" />
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public long UserCoins { get; init; }
+
+    [SupplyParameterFromQuery]
+    public int Energy { get; init; }
+
+    [SupplyParameterFromQuery]
+    public int MaxEnergy { get; init; }
+
+    long telegramId;
+    UserDTO user = new();
+    List<LimonTask> tasks = new();
+
+    async Task CheckReward(LimonTask task)
+    {
+        var success = await httpClient.GetFromJsonAsync<bool>($"api/tasks/check/{task.Id}?telegramId={telegramId}");
+
+        if (success)
+        {
+            await js.InvokeVoidAsync("showToast", "Задание выполнено");
+            user = await httpClient.GetFromJsonAsync<UserDTO>($"api/user/{telegramId}");
+
+            StateHasChanged();
+        }
+        else
+        {
+            await js.InvokeVoidAsync("showToast", "Не выполнены все условия");
+        }
+
+        if (task.Link is not null)
+        {
+            if(task.TelegramChannelId is not null)
+            {
+                await js.InvokeVoidAsync("openTelegram", task.Link);
+                return;
+            }
+
+            await js.InvokeVoidAsync("openLink", task.Link);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        await js.InvokeVoidAsync("backButtonToggle", $"?UserCoins={UserCoins}&Energy={Energy}&MaxEnergy={MaxEnergy}");
+
+        telegramId = await js.InvokeAsync<long>("getUserId");
+
+        user = await httpClient.GetFromJsonAsync<UserDTO>($"api/user/{telegramId}");
+        tasks = await httpClient.GetFromJsonAsync<List<LimonTask>>("api/tasks");
+
+        StateHasChanged();
+    }
+}

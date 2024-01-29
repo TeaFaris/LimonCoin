@@ -1,0 +1,13 @@
+﻿.avatar-image {
+    border-radius: 50%;
+}
+
+.avatar-container {
+    display: inline-flex;
+    float: left;
+}
+
+.avatar {
+    margin-right: -10px;
+    list-style-type: none;
+}

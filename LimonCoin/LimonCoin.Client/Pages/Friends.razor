@@ -1,0 +1,104 @@
+﻿@page "/friends"
+@using LimonCoin.Shared
+
+@rendermode InteractiveWebAssembly
+
+@inject IJSRuntime js
+@inject HttpClient httpClient
+@inject NavigationManager nav
+
+<link rel="stylesheet" href="css/menu.css" />
+
+<div style="display: flex; justify-content: center; z-index: -1;">
+    <img class="w-100" style="position: fixed; margin-top: 10%; pointer-events: none;" src="images/starry-background-1.svg" />
+</div>
+
+<div class="text-center" style="padding-top: 6%; padding-bottom: 2%; padding-left: 4%; padding-right: 4%;">
+    <h1>@referrals.Count Друг(-а)</h1>
+
+    <h2 style="margin-top: 20px;">Достижения</h2>
+
+    <div @onclick="InviteFriend" style="margin-top: 15px;" class="friends-item">
+        <div class="d-flex">
+            <img height="60" weight="60" src="images/emojis/small_coin.svg" />
+            <div style="margin-left: 12px; margin-top: 6px;">
+                <h4 style="font-weight: 400; font-family: Arial;">Пригласите друга</h4>
+                <h6 class="grayed-out" style="font-weight: 400; font-family: Arial; margin-top: -6px;">+2,500 для Вас и друга</h6>
+            </div>
+        </div>
+
+        <img src="images/arrow-right.svg" style="transform: rotate(180deg);" />
+    </div>
+
+    <h2 style="margin-top: 30px;">Друзья</h2>
+
+    <div>
+        @foreach(var referral in referrals)
+        {
+            var league = LeagueTypeExtensions.GetLeagueFromCoins(referral.Coins);
+
+            <div style="margin-top: 15px; align-items: start;" class="friends-item fade-in">
+                <div class="d-flex">
+                    <img style="border-radius: 26px;" height="60" weight="60" src="avatars/@(referral.TelegramId).jpg" />
+                    <div style="margin-left: 12px; margin-top: 6px;">
+                        <h4 style="font-weight: 400; font-family: Arial; text-align: start;">@referral.Username</h4>
+                        <div style="margin-top: -8px;" class="d-flex">
+                            <img src="images/cups/@(league.ToProgramName()).png" style="margin-top: 3px;" width="16" height="16" />
+                            <div class="grayed-out" style="font-weight: 400; font-family: Arial; margin-left: 5px;">@league.ToDisplayName()</div>
+                            <div class="grayed-out" style="font-weight: 400; font-family: Arial; margin-left: 6px;">•</div>
+                            <img src="images/emojis/small_coin.svg" style="margin-top: 4px; margin-left: 6px;" width="16" height="16" />
+                            <div class="grayed-out" style="font-weight: 400; font-family: Arial; margin-left: 6px;">@referral.Coins</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <img class="mt-3" @onclick="InviteFriend" src="images/buttons/invite_friend_button.svg" height="70" />
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public long UserCoins { get; init; }
+
+    [SupplyParameterFromQuery]
+    public int Energy { get; init; }
+
+    [SupplyParameterFromQuery]
+    public int MaxEnergy { get; init; }
+
+    long telegramId;
+
+    UserDTO user = new();
+
+    List<UserDTO> referrals = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        await js.InvokeVoidAsync("backButtonToggle", $"?UserCoins={UserCoins}&Energy={Energy}&MaxEnergy={MaxEnergy}");
+
+        telegramId = await js.InvokeAsync<long>("getUserId");
+
+        user = await httpClient.GetFromJsonAsync<UserDTO>($"api/user/{telegramId}");
+
+        foreach(var referralId in user.ReferralTelegramIds ?? [])
+        {
+            referrals.Add(await httpClient.GetFromJsonAsync<UserDTO>($"api/user/{referralId}"));
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task InviteFriend()
+    {
+        await httpClient.PostAsync($"api/user/sendReferralLink/{telegramId}", null);
+
+        await js.InvokeVoidAsync("closeWebApp");
+    }
+}
