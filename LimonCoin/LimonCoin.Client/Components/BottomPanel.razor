@@ -21,7 +21,7 @@
                         _ => UserItem.MedalType.None
                     };
 
-                    <UserItem Username="@user.Username" Coins="@user.Coins" Medal="@medalType" AvatarUrl="@($"avatars/{user.TelegramId}.jpg")" />
+                    <UserItem Username="@user.Username" Coins="@user.Coins" Medal="@medalType" Number="i + 1" AvatarUrl="@($"avatars/{user.TelegramId}.jpg")" />
                 }
             </div>
         </div>
@@ -41,7 +41,7 @@
                         _ => UserItem.MedalType.None
                     };
 
-                    <UserItem Username="@user.Username" Coins="@user.Coins" Medal="@medalType" AvatarUrl="@($"avatars/{user.TelegramId}.jpg")" />
+                    <UserItem Username="@user.Username" Coins="@user.Coins" Medal="@medalType" Number="i + 1" AvatarUrl="@($"avatars/{user.TelegramId}.jpg")" />
                 }
             </div>
         </div>

@@ -11,12 +11,20 @@
 
 <PageTitle>Home</PageTitle>
 
+@if(!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="overlay text-center w-100 h-100 p-4">
+        <h2>Ошибка подключения к серверу...</h2>
+        <div style="color: darkred; font-size: 10px;" class="mt-2">@errorMessage</div>
+    </div>
+}
+
 <div class="text-center">
     <div style="padding-top: 6%; padding-bottom: 6%; padding-left: 4%; padding-right: 4%;">
         <div>
             <div style="gap: 10px;" class="d-flex justify-content-center">
                 <img class="fade-in" src="images/emojis/small_coin.svg" />
-                <h1>@((lastUpdate.Coins + initializingCoins).ToString("#,0"))</h1>
+                <h1>@(lastUpdate.Coins.ToString("#,0"))</h1>
             </div>
 
             <div>
@@ -31,12 +39,12 @@
     </div>
 
     <div style="padding-left: 4%; padding-right: 4%;">
-        <img class="tiltingParent pop" @onclick=Click style="width: 85%;" src="images/home/coin.png" />
+        <img class="tiltingParent pop" @ontouchstart=Click style="width: 85%;" src="images/home/coin.png" />
     </div>
 
     <div class="bottom" style="padding-top: 6%; padding-left: 4%; padding-right: 4%;">
         <a href="/withdraw?UserCoins=@lastUpdate.Coins&Energy=@lastUpdate.Energy&MaxEnergy=@lastUpdate.MaxEnergy" style="margin-top: 18px; margin-bottom: 18px;">
-            <img width="135" height="48" src="images/buttons/withdraw_button.svg" />
+            <img src="images/buttons/withdraw_button.svg" />
         </a>
 
         <div class="d-flex" style="margin-bottom: 18px; justify-content: space-between;">
@@ -92,8 +100,6 @@
     [SupplyParameterFromQuery]
     public int MaxEnergy { get; init; }
 
-    private ulong initializingCoins;
-
     private HubConnection hub;
 
     private UserDTO lastUpdate = new();
@@ -108,21 +114,21 @@
 
     private DateTime lastTimeClicked = DateTime.Now;
 
+    private string errorMessage = "";
+
     public async Task Click()
     {
-        if(lastTimeClicked.AddMilliseconds(80) > DateTime.Now)
+        if(hub.State != HubConnectionState.Connected)
         {
             return;
         }
 
-        if (hub.State != HubConnectionState.Connected)
+        if (lastTimeClicked.AddMilliseconds(25) > DateTime.Now)
         {
-            initializingCoins++;
+            return;
         }
-        else
-        {
-            await hub.SendAsync("Click", telegramId);
-        }
+
+        await hub.SendAsync("Click", telegramId);
 
         lastTimeClicked = DateTime.Now;
     }
@@ -152,7 +158,16 @@
             await js.InvokeVoidAsync("showToast", notificationMessage);
         });
 
-        await hub.StartAsync();
+        try
+        {
+            await hub.StartAsync();
+        }
+        catch(Exception ex)
+        {
+            errorMessage = ex.ToString();
+        }
+
+        StateHasChanged();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -162,18 +177,16 @@
             return;
         }
 
-        telegramId = await js.InvokeAsync<long>("getUserId");
-
-        await hub.SendAsync("Register", telegramId);
-
-        _ = Task.Run(async () =>
+        try
         {
-            for (ulong i = 0; i < initializingCoins; i++)
-            {
-                await hub.SendAsync("Click", telegramId);
-                initializingCoins--;
-                await Task.Delay(100);
-            }
-        });
+            telegramId = await js.InvokeAsync<long>("getUserId");
+            await hub.SendAsync("Register", telegramId);
+        }
+        catch(Exception ex)
+        {
+            errorMessage = ex.ToString();
+        }
+
+        StateHasChanged();
     }
 }

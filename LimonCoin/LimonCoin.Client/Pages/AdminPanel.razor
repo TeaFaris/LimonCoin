@@ -20,8 +20,10 @@
         }
         else
         {
-            @foreach (var user in users)
+            @for (int i = 0; i < users.Count; i++)
             {
+                var user = users[i];
+
                 <div @onclick="@(() => navManager.NavigateTo($"/adminpanel/user/{user.TelegramId}"))" style="background-color: rgba(255, 255, 255, 0.3); display: inline-flex; padding: 10px; border-radius: 20px; align-items: center; justify-content: space-between; color: white; overflow: hidden;">
                     <UserItem Username="@user.Username" Coins="@user.Coins" Medal="UserItem.MedalType.None" AvatarUrl="@($"avatars/{user.TelegramId}.jpg")" />
                     <h3 style="margin-right: 20px;">></h3>

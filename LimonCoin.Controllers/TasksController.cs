@@ -2,6 +2,7 @@
 using LimonCoin.Models;
 using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
 
 namespace LimonCoin.Controllers
 {
@@ -87,14 +88,20 @@ namespace LimonCoin.Controllers
             {
                 try
                 {
-                    if(task.Link is not null)
+                    if(task.TelegramChannelId is not null)
                     {
-                        user.CompletedTasks.Add(task.Id);
-                    }
-                    else if(task.TelegramChannelId is not null)
-                    {
-                        await tgClient.GetChatMemberAsync(task.TelegramChannelId, telegramId);
+                        var chatMember = await tgClient.GetChatMemberAsync(task.TelegramChannelId, telegramId);
 
+                        if(chatMember.Status is ChatMemberStatus.Member
+                                             or ChatMemberStatus.Administrator
+                                             or ChatMemberStatus.Creator
+                                             or ChatMemberStatus.Restricted)
+                        {
+                            user.CompletedTasks.Add(task.Id);
+                        }
+                    }
+                    else if (task.Link is not null)
+                    {
                         user.CompletedTasks.Add(task.Id);
                     }
 

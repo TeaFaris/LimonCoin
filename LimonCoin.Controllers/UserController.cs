@@ -3,8 +3,6 @@ using LimonCoin.Hubs;
 using LimonCoin.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Drawing;
-using System.Net.Http.Headers;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -114,7 +112,7 @@ namespace LimonCoin.Controllers
         }
 
         [HttpPost("withdraw/{id}")]
-        public async Task<ActionResult<bool>> Withdraw(long id, [FromQuery] string wallet)
+        public async Task<ActionResult<bool>> Withdraw(long id, [FromQuery] string wallet, [FromQuery] long coins)
         {
             var user = dbContext.Users
                 .FirstOrDefault(x => x.TelegramId == id);
@@ -124,18 +122,18 @@ namespace LimonCoin.Controllers
                 return NotFound();
             }
 
-            if (user.Coins < 10_000_000)
+            if (user.Coins < (ulong)coins || 10_000_000 <= coins)
             {
                 return false;
             }
 
-            user.Coins -= 10_000_000;
+            user.Coins -= (ulong)coins;
 
             var tgUser = await tgClient.GetChatAsync(id);
             await tgClient.SendTextMessageAsync(
-                    439217086,
+                    6940830288,
                     $"""
-                    Поступил новый запрос на вывод 10,000,000 (100$) монет от @{tgUser.Username ?? tgUser.FirstName}
+                    Поступил новый запрос на вывод {coins:#,0} ({coins / 100_000m}$) монет от @{tgUser.Username ?? tgUser.FirstName}(TelegramId: {tgUser.Id})
 
                     Кошелёк: {wallet}
                     """
@@ -271,6 +269,11 @@ namespace LimonCoin.Controllers
             var userChat = await tgClient.GetChatAsync(user.TelegramId);
             var username = userChat.Username ?? userChat.FirstName;
 
+            var referrals = dbContext
+                                .Users
+                                .Where(x => x.ReferrerId == user.Id)
+                                .Select(x => x.TelegramId);
+
             return new UserDTO
             {
                 TelegramId = user.TelegramId,
@@ -281,8 +284,8 @@ namespace LimonCoin.Controllers
                 LastTimeClicked = user.LastTimeClicked,
                 MaxEnergy = user.MaxEnergy,
                 Username = username,
-                ReferrerId = null,
-                ReferralTelegramIds = [],
+                ReferrerId = user.ReferrerId,
+                ReferralTelegramIds = referrals,
                 CoinsThisWeek = user.CoinsThisWeek,
                 CoinsThisDay = user.CoinsThisDay,
                 AwardedTasks = user.AwardedTasks,

@@ -69,14 +69,14 @@
             await js.InvokeVoidAsync("showToast", "Не выполнены все условия");
         }
 
+        if (task.TelegramChannelId is not null && !success)
+        {
+            await js.InvokeVoidAsync("openTelegram", task.Link);
+            return;
+        }
+
         if (task.Link is not null)
         {
-            if(task.TelegramChannelId is not null)
-            {
-                await js.InvokeVoidAsync("openTelegram", task.Link);
-                return;
-            }
-
             await js.InvokeVoidAsync("openLink", task.Link);
         }
     }

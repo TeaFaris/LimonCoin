@@ -22,12 +22,17 @@
     <h3 class="grayed-out">$ @usdCoins USD</h3>
 
     <div style="margin-top: 20px;">
+        <InputNumber TValue="long?" @bind-Value=@coinsToWithdraw class="form-control" style="border-radius: 10px; background: rgba(255, 255, 255, 0.15); color: #FFF; border-width: 0px;" placeholder="Кол-во монет" />
+    </div>
+
+    <div style="margin-top: 20px;">
         <InputText @bind-Value=@wallet class="form-control" style="border-radius: 10px; background: rgba(255, 255, 255, 0.15); color: #FFF; border-width: 0px;" placeholder="Номер кошелька (USDT TRC 20)" />
     </div>
+
     <h6 style="margin-top: 20px;">*Минимальный вывод 10,000,000 монет</h6>
 
     <a @onclick=WithdrawMoney>
-        <img style="margin-top: 50px;" height="48" src="images/buttons/withdraw_button.svg" />
+        <img style="margin-top: 50px;" src="images/buttons/withdraw_button.svg" />
     </a>
 </div>
 
@@ -40,7 +45,7 @@
 
     <a href="https://t.me/limon_coin_ads">@@limon_coin_ads</a>
     
-    <a style="text-decoration: none; color: #FFF;" @onclick="@(async () => await js.InvokeVoidAsync("openLink", "https://ebony-shroud-b2b.notion.site/513fe10cdb564c48a39787c82c027dfc"))">
+    <a style="text-decoration: underline; color: #FFF;" @onclick="@(async () => await js.InvokeVoidAsync("openLink", "https://ebony-shroud-b2b.notion.site/513fe10cdb564c48a39787c82c027dfc"))">
         <h1>FAQ</h1>
     </a>
 </div>
@@ -61,15 +66,17 @@
 
     string wallet = "";
 
+    long? coinsToWithdraw = null;
+
     async Task WithdrawMoney()
     {
-        if(UserCoins <= 10_000_000)
+        if (coinsToWithdraw <= 10_000_000 || UserCoins <= coinsToWithdraw)
         {
             await js.InvokeVoidAsync("showToast", "У Вас недостаточно средств!");
             return;
         }
 
-        await httpClient.PostAsync($"api/user/withdraw/{telegramId}?wallet={wallet}", null!);
+        await httpClient.PostAsync($"api/user/withdraw/{telegramId}?wallet={wallet}&coins={coinsToWithdraw}", null!);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

@@ -58,12 +58,12 @@ namespace LimonCoin.Hubs
                 return;
             }
 
-            if (DateTime.UtcNow < user.LastTimeClicked.AddMilliseconds(100))
+            if (DateTime.UtcNow < user.LastTimeClicked.AddMilliseconds(50))
             {
                 return;
             }
 
-            if(user.Energy == 0)
+            if (user.Energy == 0)
             {
                 return;
             }

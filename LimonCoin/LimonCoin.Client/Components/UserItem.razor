@@ -1,6 +1,15 @@
 ﻿<div class="item-tab-container fade-in">
     <div class="item-tab">
-        <img src="@medalImageSrc" height="30" width="30" />
+        @if(Medal == MedalType.None)
+        {
+            <h5 style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; margin: 0;">
+                @medalImageSrc
+            </h5>
+        }
+        else
+        {
+            <img src="@medalImageSrc" height="30" width="30" />
+        }
         <img src="@AvatarUrl" style="border-radius: 26px;" height="50" width="50" />
     </div>
     <div>
@@ -23,11 +32,14 @@
     public MedalType Medal { get; init; }
 
     [Parameter]
+    public int Number { get; init; }
+
+    [Parameter]
     public string AvatarUrl { get; init; }
 
     private string medalImageSrc => Medal switch
     {
-        MedalType.None => "images/medals/none.png",
+        MedalType.None => Number.ToString(),
         MedalType.Bronze => "images/medals/bronze.png",
         MedalType.Silver => "images/medals/silver.png",
         MedalType.Gold => "images/medals/gold.png",

@@ -16,9 +16,18 @@
 
     <div class="text-start" style="display: flex; align-items: center; margin-top: 50px;">
         <ul class="avatar-container" style="padding: 0; margin-top: revert; height: 40px;">
-            @for (int i = 0; i < 3 && users.Count >= 3; i++)
+            @if (users.Count >= 3)
             {
-                <li class="avatar fade-in"><img class="avatar-image h-100" src="avatars/@(users[i].TelegramId).jpg"></li>
+                @for (int i = 0; i < 3; i++)
+                {
+                    <li class="avatar fade-in"><img class="avatar-image h-100" width="40" src="avatars/@(users[i].TelegramId).jpg"></li>
+                }
+            }
+            else
+            {
+                <li class="avatar fade-in"><img class="avatar-image h-100" width="40" src="avatars/placeholder.jpg"></li>
+                <li class="avatar fade-in"><img class="avatar-image h-100" width="40" src="avatars/placeholder.jpg"></li>
+                <li class="avatar fade-in"><img class="avatar-image h-100" width="40" src="avatars/placeholder.jpg"></li>
             }
         </ul>
 
@@ -32,9 +41,18 @@
 
     <div class="text-start" style="display: flex; align-items: center;">
         <ul class="avatar-container" style="padding: 0; margin-top: revert; height: 40px;">
-            @for (int i = 3; i < 6 && users.Count >= 6; i++)
+            @if (users.Count >= 6)
             {
-                <li class="avatar fade-in"><img class="avatar-image h-100" src="avatars/@(users[i].TelegramId).jpg"></li>
+                @for (int i = 3; i < 6; i++)
+                {
+                    <li class="avatar fade-in"><img class="avatar-image h-100" width="40" src="avatars/@(users[i].TelegramId).jpg"></li>
+                }
+            }
+            else
+            {
+                <li class="avatar fade-in"><img class="avatar-image h-100" width="40" src="avatars/placeholder.jpg"></li>
+                <li class="avatar fade-in"><img class="avatar-image h-100" width="40" src="avatars/placeholder.jpg"></li>
+                <li class="avatar fade-in"><img class="avatar-image h-100" width="40" src="avatars/placeholder.jpg"></li>
             }
         </ul>
 
@@ -48,9 +66,18 @@
 
     <div class="text-start" style="display: flex; align-items: center;">
         <ul class="avatar-container" style="padding: 0; margin-top: revert; height: 40px;">
-            @for (int i = 6; i < 9 && users.Count >= 9; i++)
+            @if (users.Count >= 9)
             {
-                <li class="avatar fade-in"><img class="avatar-image h-100" src="avatars/@(users[i].TelegramId).jpg"></li>
+                @for (int i = 6; i < 9; i++)
+                {
+                    <li class="avatar fade-in"><img class="avatar-image h-100" width="40" src="avatars/@(users[i].TelegramId).jpg"></li>
+                }
+            }
+            else
+            {
+                <li class="avatar fade-in"><img class="avatar-image h-100" width="40" src="avatars/placeholder.jpg"></li>
+                <li class="avatar fade-in"><img class="avatar-image h-100" width="40" src="avatars/placeholder.jpg"></li>
+                <li class="avatar fade-in"><img class="avatar-image h-100" width="40" src="avatars/placeholder.jpg"></li>
             }
         </ul>
 

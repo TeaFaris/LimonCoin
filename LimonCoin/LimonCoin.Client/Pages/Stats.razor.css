@@ -6,8 +6,7 @@
 }
 
 .avatar-container {
-    display: inline-flex;
-    float: left;
+    display: flex;
 }
 
 .avatar {

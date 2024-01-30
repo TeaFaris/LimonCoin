@@ -47,7 +47,7 @@
                             <div class="grayed-out" style="font-weight: 400; font-family: Arial; margin-left: 5px;">@league.ToDisplayName()</div>
                             <div class="grayed-out" style="font-weight: 400; font-family: Arial; margin-left: 6px;">•</div>
                             <img src="images/emojis/small_coin.svg" style="margin-top: 4px; margin-left: 6px;" width="16" height="16" />
-                            <div class="grayed-out" style="font-weight: 400; font-family: Arial; margin-left: 6px;">@referral.Coins</div>
+                            <div class="grayed-out" style="font-weight: 400; font-family: Arial; margin-left: 6px;">@referral.Coins.ToString("#,0")</div>
                         </div>
                     </div>
                 </div>
@@ -86,6 +86,11 @@
         telegramId = await js.InvokeAsync<long>("getUserId");
 
         user = await httpClient.GetFromJsonAsync<UserDTO>($"api/user/{telegramId}");
+
+        if(user.ReferrerId is not null)
+        {
+            referrals.Add(await httpClient.GetFromJsonAsync<UserDTO>($"api/user/{user.ReferrerId}"));
+        }
 
         foreach(var referralId in user.ReferralTelegramIds ?? [])
         {
