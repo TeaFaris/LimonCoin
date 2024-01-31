@@ -41,9 +41,15 @@
                     <h6 style="margin-top: 4px;" class="grayed-out">(@(user.ClickerLevel + 1) LVL)</h6>
                 </div>
 
-                <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">За 1 клик добавляется @cpsAfter монет вместо @cpsBefore</div>
-
-                <h3 class="price-text" style="margin-top: -3px;">@cpsPrice руб.</h3>
+                @if(user.ClickerLevel == 2)
+                {
+                    <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">Вы достигли максимума</div>
+                }
+                else
+                {
+                    <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">За 1 клик добавляется @cpsAfter монет вместо @cpsBefore</div>
+                    <h3 class="price-text" style="margin-top: -3px;">@cpsPrice руб.</h3>
+                }
             </div>
         </div>
         <div @onclick="() => Buy(1)" class="d-flex">
@@ -56,9 +62,17 @@
                     <h6 style="margin-top: 4px;" class="grayed-out">(@(user.EnergyRecoveryLevel + 1) LVL)</h6>
                 </div>
 
-                <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">За 3 сек. прибавляется @energyRechargeAfter заряда вместо @energyRechargeBefore</div>
+                @if (user.EnergyRecoveryLevel == 2)
+                {
+                    <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">Вы достигли максимума</div>
+                }
+                else
+                {
+                    <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">За 3 сек. прибавляется @energyRechargeAfter заряда вместо @energyRechargeBefore</div>
+                    <h3 class="price-text" style="margin-top: -3px;">@energyRechargePrice руб.</h3>
+                }
 
-                <h3 class="price-text" style="margin-top: -3px;">@energyRechargePrice руб.</h3>
+                
             </div>
         </div>
         <div @onclick="() => Buy(2)" class="d-flex">
@@ -71,9 +85,15 @@
                     <h6 style="margin-top: 4px;" class="grayed-out">(@(user.EnergyCapacityLevel + 1) LVL)</h6>
                 </div>
 
-                <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">Лимит энергии @energyCapacityAfter вместо @energyCapacityBefore</div>
-
-                <h3 class="price-text" style="margin-top: -3px;">@energyCapacityPrice руб.</h3>
+                @if (user.EnergyCapacityLevel == 2)
+                {
+                    <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">Вы достигли максимума</div>
+                }
+                else
+                {
+                    <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">Лимит энергии @energyCapacityAfter вместо @energyCapacityBefore</div>
+                    <h3 class="price-text" style="margin-top: -3px;">@energyCapacityPrice руб.</h3>
+                }
             </div>
         </div>
     </div>
