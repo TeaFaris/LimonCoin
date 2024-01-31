@@ -62,12 +62,12 @@ namespace LimonCoin.Hubs
                 return;
             }
 
-            if (DateTime.UtcNow < user.LastTimeClicked.AddMilliseconds(50))
+            if (DateTime.UtcNow < user.LastTimeClicked.AddMilliseconds(20))
             {
                 return;
             }
 
-            if (user.Energy == 0)
+            if (user.Energy < user.CoinsPerClick)
             {
                 return;
             }
@@ -76,7 +76,7 @@ namespace LimonCoin.Hubs
             user.CoinsThisDay += user.CoinsPerClick;
             user.CoinsThisWeek += user.CoinsPerClick;
 
-            user.Energy--;
+            user.Energy -= user.CoinsPerClick;
 
             user.LastTimeClicked = DateTime.UtcNow;
 
