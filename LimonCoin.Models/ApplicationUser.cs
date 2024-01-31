@@ -28,6 +28,12 @@ namespace LimonCoin.Models
 
         public int? ReferrerId { get; init; }
 
+        public int ClickerLevel { get; set; }
+        
+        public int EnergyRecoveryLevel { get; set; }
+        
+        public int EnergyCapacityLevel { get; set; }
+
         [ForeignKey(nameof(ReferrerId))]
         public ApplicationUser? Referrer { get; init; }
 

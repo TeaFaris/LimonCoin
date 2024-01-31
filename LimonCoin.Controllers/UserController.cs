@@ -3,6 +3,8 @@ using LimonCoin.Hubs;
 using LimonCoin.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Drawing;
+using System.Threading;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -28,6 +30,48 @@ namespace LimonCoin.Controllers
 
             dbContext.Update(user);
             dbContext.SaveChanges();
+
+            return Ok();
+        }
+
+        [HttpPost("requestPayment")]
+        public async Task<ActionResult> RequestPayment([FromQuery] long id, [FromQuery] int boost)
+        {
+            var user = dbContext.Users
+                .FirstOrDefault(x => x.TelegramId == id);
+
+            if (user is null)
+            {
+                return NotFound();
+            }
+
+            if (boost < 0 || boost > 2)
+            {
+                return NotFound();
+            }
+
+            int price = boost switch
+            {
+                0 => user.ClickerLevel == 2 ? 1499 : 2499,
+                1 => user.EnergyRecoveryLevel == 2 ? 1499 : 2499,
+                2 => user.EnergyCapacityLevel == 2 ? 1499 : 2499
+            };
+
+            var keyboard = new InlineKeyboardMarkup(
+                                            [
+                                                new InlineKeyboardButton("Подтвердить оплату")
+                                                {
+                                                    CallbackData = $"requestconfirmation {boost}"
+                                                }
+                                            ]);
+
+            var tgUser = await tgClient.GetChatAsync(id);
+            await tgClient.SendTextMessageAsync(id, $"""
+                                                    Отправьте {price}р. на любой из этих кошельков с комментарием в котором укажите свой телеграм юзернейм @{tgUser.Username ?? tgUser.FirstName} (ОБЯЗАТЕЛЬНО, ИНАЧЕ ОПЛАТА НЕ ПРОЙДЁТ):
+
+                                                    ЮМани: 4100118498909608
+                                                    """,
+                                                    replyMarkup: keyboard);
 
             return Ok();
         }
@@ -133,7 +177,7 @@ namespace LimonCoin.Controllers
             await tgClient.SendTextMessageAsync(
                     6940830288,
                     $"""
-                    Поступил новый запрос на вывод {coins:#,0} ({coins / 100_000m}$) монет от @{tgUser.Username ?? tgUser.FirstName}(TelegramId: {tgUser.Id})
+                    Поступил новый запрос на вывод {coins:#,0} ({coins / 100_000m}$) монет от @{tgUser.Username ?? tgUser.FirstName} (TelegramId: {tgUser.Id})
 
                     Кошелёк: {wallet}
                     """
@@ -160,7 +204,7 @@ namespace LimonCoin.Controllers
         [HttpGet("onlineCount")]
         public async Task<ActionResult<long>> GetOnlineCount()
         {
-            return ClickerHub.ConnectedUsers.Count;
+            return ClickerHub.ConnectedUsers.GroupBy(x => x.Value).Count();
         }
 
         [HttpGet("dailyCount")]
@@ -244,15 +288,13 @@ namespace LimonCoin.Controllers
                                 CoinsThisWeek = user.CoinsThisWeek,
                                 CoinsThisDay = user.CoinsThisDay,
                                 AwardedTasks = user.AwardedTasks,
-                                CompletedTasks = user.CompletedTasks
+                                CompletedTasks = user.CompletedTasks,
                             });
                         }
                 );
 
             return new(userDTOs.OrderByDescending(x => x.CoinsThisDay));
         }
-
-
 
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDTO>> Get(long id)
@@ -289,7 +331,10 @@ namespace LimonCoin.Controllers
                 CoinsThisWeek = user.CoinsThisWeek,
                 CoinsThisDay = user.CoinsThisDay,
                 AwardedTasks = user.AwardedTasks,
-                CompletedTasks = user.CompletedTasks
+                CompletedTasks = user.CompletedTasks,
+                ClickerLevel = user.ClickerLevel,
+                EnergyCapacityLevel = user.EnergyCapacityLevel,
+                EnergyRecoveryLevel = user.EnergyRecoveryLevel
             };
         }
 

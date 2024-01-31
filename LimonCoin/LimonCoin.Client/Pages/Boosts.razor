@@ -4,6 +4,7 @@
 @rendermode InteractiveWebAssembly
 
 @inject IJSRuntime js
+@inject HttpClient httpClient
 
 <link rel="stylesheet" href="css/menu.css" />
 
@@ -30,49 +31,49 @@
     </div>
 
     <div class="bottom-panel-boosts d-flex gap-4" style="margin-top: 5px; padding: 26px; flex-direction: column;">
-        <div class="d-flex">
+        <div @onclick="() => Buy(0)" class="d-flex">
             <div class="boost-icon">
                 <img src="images/boosts/click.png" height="50" width="50" />
             </div>
             <div style="margin-left: 10px; margin-top: 3px; text-align: initial;" class="boost-texts">
                 <div class="d-flex gap-1">
                     <h5>Мега тап</h5>
-                    <h6 style="margin-top: 4px;" class="grayed-out">(1 LVL)</h6>
+                    <h6 style="margin-top: 4px;" class="grayed-out">(@(user.ClickerLevel + 1) LVL)</h6>
                 </div>
 
-                <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">За 1 клик добавляется 8 монет вместо 3</div>
+                <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">За 1 клик добавляется @cpsAfter монет вместо @cpsBefore</div>
 
-                <h3 class="price-text" style="margin-top: -3px;">2499 руб.</h3>
+                <h3 class="price-text" style="margin-top: -3px;">@cpsPrice руб.</h3>
             </div>
         </div>
-        <div class="d-flex">
+        <div @onclick="() => Buy(1)" class="d-flex">
             <div class="boost-icon">
                 <img src="images/boosts/energy-restore.png" height="50" width="50" />
             </div>
             <div style="margin-left: 10px; margin-top: 3px; text-align: initial;" class="boost-texts">
                 <div class="d-flex gap-1">
                     <h5>Быстрая зарядка</h5>
-                    <h6 style="margin-top: 4px;" class="grayed-out">(1 LVL)</h6>
+                    <h6 style="margin-top: 4px;" class="grayed-out">(@(user.EnergyRecoveryLevel + 1) LVL)</h6>
                 </div>
 
-                <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">За 1 сек. прибавляется 5 заряда вместо 1</div>
+                <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">За 3 сек. прибавляется @energyRechargeAfter заряда вместо @energyRechargeBefore</div>
 
-                <h3 class="price-text" style="margin-top: -3px;">2499 руб.</h3>
+                <h3 class="price-text" style="margin-top: -3px;">@energyRechargePrice руб.</h3>
             </div>
         </div>
-        <div class="d-flex">
+        <div @onclick="() => Buy(2)" class="d-flex">
             <div class="boost-icon">
                 <img src="images/boosts/energy-capacity.png" height="50" width="50" />
             </div>
             <div style="margin-left: 10px; margin-top: 3px; text-align: initial;" class="boost-texts">
                 <div class="d-flex gap-1">
                     <h5>Лимит энергии</h5>
-                    <h6 style="margin-top: 4px;" class="grayed-out">(1 LVL)</h6>
+                    <h6 style="margin-top: 4px;" class="grayed-out">(@(user.EnergyCapacityLevel + 1) LVL)</h6>
                 </div>
 
-                <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">Лимит энергии 10000 вместо 3000</div>
+                <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">Лимит энергии @energyCapacityAfter вместо @energyCapacityBefore</div>
 
-                <h3 class="price-text" style="margin-top: -3px;">2499 руб.</h3>
+                <h3 class="price-text" style="margin-top: -3px;">@energyCapacityPrice руб.</h3>
             </div>
         </div>
     </div>
@@ -90,6 +91,29 @@
 
     private decimal usdCoins => UserCoins / 100_000m;
 
+    int cpsBefore = 3;
+    int cpsAfter = 5;
+    int cpsPrice = 2499;
+
+    int energyRechargeBefore = 1;
+    int energyRechargeAfter = 3;
+    int energyRechargePrice = 2499;
+
+    int energyCapacityBefore = 3000;
+    int energyCapacityAfter = 10000;
+    int energyCapacityPrice = 2499;
+
+    long telegramId;
+
+    UserDTO user = new();
+
+    async Task Buy(int boost)
+    {
+        await httpClient.PostAsync($"api/user/requestPayment?id={telegramId}&boost={boost}", null);
+
+        await js.InvokeVoidAsync("closeWebApp");
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
@@ -98,5 +122,47 @@
         }
 
         await js.InvokeVoidAsync("backButtonToggle", $"?UserCoins={UserCoins}&Energy={Energy}&MaxEnergy={MaxEnergy}");
+
+        telegramId = await js.InvokeAsync<long>("getUserId");
+
+        user = await httpClient.GetFromJsonAsync<UserDTO>($"api/user/{telegramId}");
+
+        cpsBefore = user.ClickerLevel switch
+        {
+            0 => 3,
+            1 => 5
+        };
+        cpsAfter = user.ClickerLevel switch
+        {
+            0 => 5,
+            1 => 7
+        };
+        cpsPrice = user.ClickerLevel == 2 ? 1499 : 2499;
+
+        energyRechargeBefore = user.EnergyRecoveryLevel switch
+        {
+            0 => 1,
+            1 => 3
+        };
+        energyRechargeAfter = user.EnergyRecoveryLevel switch
+        {
+            0 => 3,
+            1 => 5
+        };
+        energyRechargePrice = user.EnergyRecoveryLevel == 2 ? 1499 : 2499;
+
+        energyCapacityBefore = user.EnergyCapacityLevel switch
+        {
+            0 => 3000,
+            1 => 10000
+        };
+        energyCapacityAfter = user.EnergyCapacityLevel switch
+        {
+            0 => 10000,
+            1 => 17000
+        };
+        energyCapacityPrice = user.EnergyCapacityLevel == 2 ? 1499 : 2499;
+
+        StateHasChanged();
     }
 }

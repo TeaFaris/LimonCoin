@@ -75,7 +75,7 @@
             return;
         }
 
-        if (task.Link is not null)
+        if (task.TelegramChannelId is null && task.Link is not null)
         {
             await js.InvokeVoidAsync("openLink", task.Link);
         }

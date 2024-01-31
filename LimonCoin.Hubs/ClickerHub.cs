@@ -14,6 +14,7 @@ namespace LimonCoin.Hubs
 
             if (user is null)
             {
+                await Clients.Caller.ReceivedNotification("Пропишите боту заново /start");
                 Context.Abort();
                 return;
             }
@@ -40,7 +41,10 @@ namespace LimonCoin.Hubs
                 Energy = user.Energy,
                 EnergyPerSecond = user.EnergyPerSecond,
                 LastTimeClicked = user.LastTimeClicked,
-                MaxEnergy = user.MaxEnergy
+                MaxEnergy = user.MaxEnergy,
+                ClickerLevel = user.ClickerLevel,
+                EnergyCapacityLevel = user.EnergyCapacityLevel,
+                EnergyRecoveryLevel = user.EnergyRecoveryLevel
             });
         }
 
@@ -87,7 +91,10 @@ namespace LimonCoin.Hubs
                 Energy = user.Energy,
                 EnergyPerSecond = user.EnergyPerSecond,
                 LastTimeClicked = user.LastTimeClicked,
-                MaxEnergy = user.MaxEnergy
+                MaxEnergy = user.MaxEnergy,
+                ClickerLevel = user.ClickerLevel,
+                EnergyCapacityLevel = user.EnergyCapacityLevel,
+                EnergyRecoveryLevel = user.EnergyRecoveryLevel
             });
         }
     }

@@ -17,7 +17,8 @@
             Reward = 50000,
             Link = "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
             Name = "Посмотреть видео",
-            ImagePathUrl = "images/home/coin.png"
+            ImagePathUrl = "images/home/coin.png",
+            Disabled = true
         };
 
         public static readonly LimonTask BuyBoost = new()
@@ -35,6 +36,14 @@
             Name = "Пригласить 10 друзей",
             ImagePathUrl = "images/emojis/bear.png"
         };
+        
+        public static readonly LimonTask Invite100Friends = new()
+        {
+            Id = Guid.Parse("82c423f6-cc39-48d3-b4d9-36762432d90e"),
+            Reward = 500000,
+            Name = "Пригласить 100 друзей",
+            ImagePathUrl = "images/emojis/bear.png"
+        };
 
         public static readonly LimonTask AllTasks = new()
         {
@@ -44,7 +53,16 @@
             ImagePathUrl = "images/cups/gold.png"
         };
 
-        public static LimonTask[] Tasks => [SubscribeOrGoto1, SubscribeOrGoto2, BuyBoost, Invite10Friends, AllTasks];
+        public static List<LimonTask> Tasks
+        {
+            get
+            {
+                List<LimonTask> tasks = [SubscribeOrGoto1, SubscribeOrGoto2, BuyBoost, Invite10Friends, Invite100Friends, AllTasks];
+                tasks.RemoveAll(x => x.Disabled);
+
+                return tasks;
+            }
+        }
 
         public Guid Id { get; init; }
 
@@ -57,5 +75,7 @@
         public string Name { get; init; }
 
         public string ImagePathUrl { get; init; }
+
+        public bool Disabled { get; init; }
     }
 }

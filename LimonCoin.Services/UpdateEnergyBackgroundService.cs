@@ -39,7 +39,7 @@ namespace LimonCoin.Services
 
                         if (currentState == SecondsPerEnergy)
                         {
-                            user.Energy++;
+                            user.Energy += user.EnergyPerSecond;
                         }
 
                         await clickerHub.Clients.Group(user.TelegramId.ToString()).ReceiveUpdate(new()
@@ -50,7 +50,10 @@ namespace LimonCoin.Services
                             Energy = user.Energy,
                             EnergyPerSecond = user.EnergyPerSecond,
                             LastTimeClicked = user.LastTimeClicked,
-                            MaxEnergy = user.MaxEnergy
+                            MaxEnergy = user.MaxEnergy,
+                            ClickerLevel = user.ClickerLevel,
+                            EnergyCapacityLevel = user.EnergyCapacityLevel,
+                            EnergyRecoveryLevel = user.EnergyRecoveryLevel
                         });
                     }).ContinueWith(task => dbContext.SaveChangesAsync(stoppingToken), stoppingToken);
 

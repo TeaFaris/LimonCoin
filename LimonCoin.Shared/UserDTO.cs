@@ -24,6 +24,12 @@
 
         public long? ReferrerId { get; init; }
 
+        public int ClickerLevel { get; init; }
+
+        public int EnergyRecoveryLevel { get; init; }
+
+        public int EnergyCapacityLevel { get; init; }
+
         public IEnumerable<long> ReferralTelegramIds { get; init; }
 
         public List<Guid> CompletedTasks { get; init; }

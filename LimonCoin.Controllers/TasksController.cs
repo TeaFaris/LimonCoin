@@ -13,7 +13,7 @@ namespace LimonCoin.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<LimonTask>>> GetAll()
         {
-            var tasks = LimonTask.Tasks.ToList();
+            var tasks = LimonTask.Tasks;
 
             foreach (var task in tasks)
             {
@@ -76,7 +76,7 @@ namespace LimonCoin.Controllers
                 return NotFound();
             }
 
-            var task = Array.Find(LimonTask.Tasks, x => x.Id == id);
+            var task = LimonTask.Tasks.Find(x => x.Id == id);
 
             if(task is null)
             {
@@ -126,6 +126,16 @@ namespace LimonCoin.Controllers
                 await dbContext.SaveChangesAsync();
 
                 return true;
+            }
+
+            var allTasks = LimonTask.Tasks[..^1].ConvertAll(x => x.Id);
+
+            if (allTasks.TrueForAll(user.AwardedTasks.Contains))
+            {
+                user.CompletedTasks.Add(LimonTask.AllTasks.Id);
+
+                dbContext.Users.Update(user);
+                await dbContext.SaveChangesAsync();
             }
 
             return false;

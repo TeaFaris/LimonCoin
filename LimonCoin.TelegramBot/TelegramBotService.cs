@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Net.Sockets;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
@@ -127,6 +128,11 @@ namespace LimonCoin.TelegramBot
                                         referrer.CompletedTasks.Add(LimonTask.Invite10Friends.Id);
                                     }
 
+                                    if (!referrer.CompletedTasks.Contains(LimonTask.Invite100Friends.Id) && referrals.Count() == 99)
+                                    {
+                                        referrer.CompletedTasks.Add(LimonTask.Invite100Friends.Id);
+                                    }
+
                                     dbContext.Users.Update(referrer);
                                 }
                             }
@@ -194,7 +200,9 @@ namespace LimonCoin.TelegramBot
                 {
                     var chatId = callback.From.Id;
 
-                    switch (callback.Data)
+                    var commandArgs = callback.Data.Trim().Split(' ');
+
+                    switch (commandArgs[0])
                     {
                         case "info":
                             {
@@ -219,7 +227,7 @@ namespace LimonCoin.TelegramBot
                                           Лимон - это виртуальная игра-кликер, в которой вы зарабатываете монеты, нажимая на экран. 
                                           
                                           Withdrawal
-                                          Монеты можно вывести  криптовалютой usdt.
+                                          Монеты можно вывести криптовалютой USDT.
                                           
                                           Boosts
                                           Получай бусты и выполняй задания, чтобы получить больше монет Лимона.
@@ -230,6 +238,82 @@ namespace LimonCoin.TelegramBot
                                         cancellationToken: cancellationToken,
                                         replyMarkup: keyboard
                                     );
+                                break;
+                            }
+                        case "confirm":
+                            {
+                                var userId = long.Parse(commandArgs[1]);
+                                var boost = int.Parse(commandArgs[2]);
+
+                                var user = dbContext.Users.FirstOrDefault(x => x.TelegramId == userId);
+
+                                switch (boost)
+                                {
+                                    case 0:
+                                        {
+                                            user.ClickerLevel += 1;
+                                            user.CoinsPerClick += 2;
+                                            break;
+                                        }
+                                    case 1:
+                                        {
+                                            user.EnergyRecoveryLevel += 1;
+                                            user.EnergyPerSecond += 2;
+                                            break;
+                                        }
+                                    case 2:
+                                        {
+                                            user.EnergyCapacityLevel += 1;
+                                            user.MaxEnergy += 7000;
+                                            break;
+                                        }
+                                }
+
+                                if (!user.CompletedTasks.Contains(LimonTask.BuyBoost.Id))
+                                {
+                                    user.CompletedTasks.Add(LimonTask.BuyBoost.Id);
+                                }
+
+                                dbContext.Users.Update(user);
+
+                                await dbContext.SaveChangesAsync(cancellationToken);
+
+                                await botClient.SendTextMessageAsync(chatId, "Буст выдан!", cancellationToken: cancellationToken);
+                                break;
+                            }
+                        case "requestconfirmation":
+                            {
+                                var boost = int.Parse(commandArgs[1]);
+
+                                var user = dbContext.Users
+                                    .FirstOrDefault(x => x.TelegramId == chatId);
+
+                                int price = boost switch
+                                {
+                                    0 => user.ClickerLevel == 2 ? 1499 : 2499,
+                                    1 => user.EnergyRecoveryLevel == 2 ? 1499 : 2499,
+                                    2 => user.EnergyCapacityLevel == 2 ? 1499 : 2499
+                                };
+
+                                var keyboard = new InlineKeyboardMarkup(
+                                            [
+                                                new InlineKeyboardButton("Подтвердить")
+                                                {
+                                                    CallbackData = $"confirm {chatId} {boost}"
+                                                }
+                                            ]);
+
+                                var tgUser = await botClient.GetChatAsync(chatId, cancellationToken: cancellationToken);
+                                await botClient.SendTextMessageAsync(6940830288, $"""
+                                                                                  Поступил новый запрос на подтверждение покупки({price} р.) от @{tgUser.Username ?? tgUser.FirstName} (Telegram Id: {tgUser.Id})
+
+                                                                                  Если деньги не пришли, то просто проигнорируйте это сообщение.
+                                                                                  """,
+                                                                                  replyMarkup: keyboard,
+                                                                                  cancellationToken: cancellationToken);
+
+                                await botClient.SendTextMessageAsync(chatId, "Проверка оплаты может занять до 3-х часов.", cancellationToken: cancellationToken);
+
                                 break;
                             }
                     }
