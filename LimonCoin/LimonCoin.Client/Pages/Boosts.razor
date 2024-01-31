@@ -41,9 +41,15 @@
                     <h6 style="margin-top: 4px;" class="grayed-out">(@(user.ClickerLevel + 1) LVL)</h6>
                 </div>
 
-                <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">За 1 клик добавляется @cpsAfter монет вместо @cpsBefore</div>
-
-                <h3 class="price-text" style="margin-top: -3px;">@cpsPrice руб.</h3>
+                @if(user.ClickerLevel == 2)
+                {
+                    <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">Вы достигли максимума</div>
+                }
+                else
+                {
+                    <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">За 1 клик добавляется @cpsAfter монет вместо @cpsBefore</div>
+                    <h3 class="price-text" style="margin-top: -3px;">@cpsPrice руб.</h3>
+                }
             </div>
         </div>
         <div @onclick="() => Buy(1)" class="d-flex">
@@ -56,9 +62,17 @@
                     <h6 style="margin-top: 4px;" class="grayed-out">(@(user.EnergyRecoveryLevel + 1) LVL)</h6>
                 </div>
 
-                <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">За 3 сек. прибавляется @energyRechargeAfter заряда вместо @energyRechargeBefore</div>
+                @if (user.EnergyRecoveryLevel == 2)
+                {
+                    <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">Вы достигли максимума</div>
+                }
+                else
+                {
+                    <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">За 3 сек. прибавляется @energyRechargeAfter заряда вместо @energyRechargeBefore</div>
+                    <h3 class="price-text" style="margin-top: -3px;">@energyRechargePrice руб.</h3>
+                }
 
-                <h3 class="price-text" style="margin-top: -3px;">@energyRechargePrice руб.</h3>
+                
             </div>
         </div>
         <div @onclick="() => Buy(2)" class="d-flex">
@@ -71,9 +85,15 @@
                     <h6 style="margin-top: 4px;" class="grayed-out">(@(user.EnergyCapacityLevel + 1) LVL)</h6>
                 </div>
 
-                <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">Лимит энергии @energyCapacityAfter вместо @energyCapacityBefore</div>
-
-                <h3 class="price-text" style="margin-top: -3px;">@energyCapacityPrice руб.</h3>
+                @if (user.EnergyCapacityLevel == 2)
+                {
+                    <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">Вы достигли максимума</div>
+                }
+                else
+                {
+                    <div style="font-size: 10px; font-weight: 400; margin-top: -8px; font-family: Arial;">Лимит энергии @energyCapacityAfter вместо @energyCapacityBefore</div>
+                    <h3 class="price-text" style="margin-top: -3px;">@energyCapacityPrice руб.</h3>
+                }
             </div>
         </div>
     </div>
@@ -130,38 +150,44 @@
         cpsBefore = user.ClickerLevel switch
         {
             0 => 3,
-            1 => 5
+            1 => 5,
+            _ => 0
         };
         cpsAfter = user.ClickerLevel switch
         {
             0 => 5,
-            1 => 7
+            1 => 7,
+            _ => 0
         };
-        cpsPrice = user.ClickerLevel == 2 ? 1499 : 2499;
+        cpsPrice = user.ClickerLevel == 1 ? 1499 : 2499;
 
         energyRechargeBefore = user.EnergyRecoveryLevel switch
         {
             0 => 1,
-            1 => 3
+            1 => 3,
+            _ => 0
         };
         energyRechargeAfter = user.EnergyRecoveryLevel switch
         {
             0 => 3,
-            1 => 5
+            1 => 5,
+            _ => 0
         };
-        energyRechargePrice = user.EnergyRecoveryLevel == 2 ? 1499 : 2499;
+        energyRechargePrice = user.EnergyRecoveryLevel == 1 ? 1499 : 2499;
 
         energyCapacityBefore = user.EnergyCapacityLevel switch
         {
             0 => 3000,
-            1 => 10000
+            1 => 10000,
+            _ => 0
         };
         energyCapacityAfter = user.EnergyCapacityLevel switch
         {
             0 => 10000,
-            1 => 17000
+            1 => 17000,
+            _ => 0
         };
-        energyCapacityPrice = user.EnergyCapacityLevel == 2 ? 1499 : 2499;
+        energyCapacityPrice = user.EnergyCapacityLevel == 1 ? 1499 : 2499;
 
         StateHasChanged();
     }
