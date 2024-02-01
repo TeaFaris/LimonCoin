@@ -190,6 +190,9 @@ namespace LimonCoin.TelegramBot
                                           Так вы вместе получите еще больше монет.
                                           
                                           Лимон - мечты сбываются.
+
+                                          Подпишитесь на наше сообщество:
+                                          @limon_coin
                                           """,
                                 cancellationToken: cancellationToken,
                                 replyMarkup: keyboard
@@ -234,6 +237,9 @@ namespace LimonCoin.TelegramBot
                                           
                                           Frens
                                           Пригласи кого-нибудь, и вы оба получите бонусы. Помогите другу перейти в следующие лигу, и вы получите ещё больше Лимона.
+
+                                          Подпишитесь на наше сообщество:
+                                          @limon_coin
                                           """,
                                         cancellationToken: cancellationToken,
                                         replyMarkup: keyboard

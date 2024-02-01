@@ -3,6 +3,7 @@
 
 @rendermode InteractiveAuto
 
+@inject NavigationManager navManager
 @inject HttpClient httpClient
 
 <div class="text-center p-5">
@@ -40,6 +41,25 @@
         <h4>Монет за клик:</h4>
         <h4>@user.CoinsPerClick</h4>
     </div>
+
+    <div class="w-100 h-100 gap-3 text-start mt-3" style="display: flex; flex-direction: column;">
+        @if (users is null)
+        {
+            <h1>Поиск...</h1>
+        }
+        else
+        {
+            @for (int i = 0; i < users.Count; i++)
+            {
+                var user = users[i];
+
+                <div @onclick="@(() => navManager.NavigateTo($"/adminpanel/user/{user.TelegramId}"))" style="background-color: rgba(255, 255, 255, 0.3); display: inline-flex; padding: 10px; border-radius: 20px; align-items: center; justify-content: space-between; color: white; overflow: hidden;">
+                    <UserItem Username="@user.Username" Coins="@user.Coins" Number="i + 1" Medal="UserItem.MedalType.None" AvatarUrl="@($"avatars/{user.TelegramId}.jpg")" />
+                    <h3 style="margin-right: 20px;">></h3>
+                </div>
+            }
+        }
+    </div>
 </div>
 
 @code {
@@ -48,9 +68,17 @@
 
     UserDTO user = new();
 
+    List<UserDTO>? users = null;
+
     protected override async Task OnParametersSetAsync()
     {
         user = await httpClient.GetFromJsonAsync<UserDTO>($"api/user/{Id}");
+
+        users = new();
+        foreach (var referralId in user.ReferralTelegramIds)
+        {
+            users.Add(await httpClient.GetFromJsonAsync<UserDTO>($"api/user/{referralId}"));
+        }
 
         StateHasChanged();
     }

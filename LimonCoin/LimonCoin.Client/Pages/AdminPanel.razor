@@ -25,7 +25,7 @@
                 var user = users[i];
 
                 <div @onclick="@(() => navManager.NavigateTo($"/adminpanel/user/{user.TelegramId}"))" style="background-color: rgba(255, 255, 255, 0.3); display: inline-flex; padding: 10px; border-radius: 20px; align-items: center; justify-content: space-between; color: white; overflow: hidden;">
-                    <UserItem Username="@user.Username" Coins="@user.Coins" Medal="UserItem.MedalType.None" AvatarUrl="@($"avatars/{user.TelegramId}.jpg")" />
+                    <UserItem Username="@user.Username" Coins="@user.Coins" Number="i + 1" Medal="UserItem.MedalType.None" AvatarUrl="@($"avatars/{user.TelegramId}.jpg")" />
                     <h3 style="margin-right: 20px;">></h3>
                 </div>
             }
@@ -56,7 +56,7 @@
     {
         if (string.IsNullOrWhiteSpace(searchQuery))
         {
-            users = await httpClient.GetFromJsonAsync<List<UserDTO>>("api/user/all?offset=0");
+            users = await httpClient.GetFromJsonAsync<List<UserDTO>>("api/user/all");
             return;
         }
 
