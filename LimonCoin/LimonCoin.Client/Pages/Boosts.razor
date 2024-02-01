@@ -129,6 +129,13 @@
 
     async Task Buy(int boost)
     {
+        if ((boost == 2 && user.EnergyCapacityLevel == 2) ||
+            (boost == 0 && user.ClickerLevel == 2) ||
+            (boost == 1 && user.EnergyRecoveryLevel == 2))
+        {
+            return;
+        }
+
         await httpClient.PostAsync($"api/user/requestPayment?id={telegramId}&boost={boost}", null);
 
         await js.InvokeVoidAsync("closeWebApp");
