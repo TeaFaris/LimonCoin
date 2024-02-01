@@ -1,10 +1,10 @@
-﻿using LimonCoin.Data;
+﻿using LimonCoin.Configuration;
+using LimonCoin.Data;
 using LimonCoin.Hubs;
 using LimonCoin.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Drawing;
-using System.Threading;
+using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -13,7 +13,7 @@ namespace LimonCoin.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public sealed class UserController(ApplicationDBContext dbContext, TelegramBotClient tgClient) : ControllerBase
+    public sealed class UserController(ApplicationDBContext dbContext, TelegramBotClient tgClient, IOptions<TelegramSettings> telegramConfig,) : ControllerBase
     {
         [HttpPost("dawdshiuhawd/{id}")]
         public async Task<ActionResult> AddCoins(long id, [FromQuery] long coins)
@@ -66,12 +66,18 @@ namespace LimonCoin.Controllers
                                             ]);
 
             var tgUser = await tgClient.GetChatAsync(id);
-            await tgClient.SendTextMessageAsync(id, $"""
-                                                    Отправьте {price}р. на любой из этих кошельков с комментарием в котором укажите свой телеграм юзернейм @{tgUser.Username ?? tgUser.FirstName} (ОБЯЗАТЕЛЬНО, ИНАЧЕ ОПЛАТА НЕ ПРОЙДЁТ):
-
-                                                    ЮМани: 4100118498909608
-                                                    """,
-                                                    replyMarkup: keyboard);
+            await tgClient.SendPhotoAsync(
+                    id,
+                    new InputFileUrl(telegramConfig.Value.WebAppUrl + "images/bot/yoomoney.jpg"),
+                    caption: $"""
+                             Отправьте {price}р. на кошелек Юмани.
+                             После перевода пришлите чек и свой юзернейм нашей тех. поддержке (@limon_coin_ads) нажав на кнопку «подтвердить платеж»
+                             
+                             Ваш юзернейм: @тутюзернеймигрока
+                             ЮМани: 4100118498909608
+                             """,
+                    replyMarkup: keyboard
+                );
 
             return Ok();
         }
@@ -118,15 +124,12 @@ namespace LimonCoin.Controllers
         }
 
         [HttpGet("all")]
-        public async Task<ActionResult<List<UserDTO>>> GetUsers([FromQuery] uint offset)
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers()
         {
             var userDTOs = new List<UserDTO>();
 
             await Parallel.ForEachAsync(
-                    dbContext
-                        .Users
-                        .Skip((int)offset)
-                        .Take(20),
+                    dbContext.Users.OrderByDescending(x => x.Coins),
                     async (user, ct) =>
                     {
                         var userChat = await tgClient.GetChatAsync(user.TelegramId, ct);
@@ -152,7 +155,7 @@ namespace LimonCoin.Controllers
                     }
                 );
 
-            return userDTOs;
+            return new(userDTOs.OrderByDescending(x => x.Coins));
         }
 
         [HttpPost("withdraw/{id}")]
@@ -225,6 +228,7 @@ namespace LimonCoin.Controllers
                     dbContext
                         .Users
                         .Where(x => x.Coins >= min && x.Coins < max)
+                        .OrderByDescending(x => x.CoinsThisDay)
                         .Take(100),
                     async (user, ct) =>
                     {

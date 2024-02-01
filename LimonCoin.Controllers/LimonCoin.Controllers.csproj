@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\LimonCoin.Configuration\LimonCoin.Configuration.csproj" />
     <ProjectReference Include="..\LimonCoin.Data\LimonCoin.Data.csproj" />
     <ProjectReference Include="..\LimonCoin.Hubs\LimonCoin.Hubs.csproj" />
     <ProjectReference Include="..\LimonCoin.Shared\LimonCoin.Shared.csproj" />
