@@ -14,7 +14,7 @@
 </div>
 
 <div class="text-center" style="padding-top: 6%; padding-bottom: 2%; padding-left: 4%; padding-right: 4%;">
-    <h1>@referrals.Count Друг(-а)</h1>
+    <h1>@friendsCount Друг(-а)</h1>
 
     <h2 style="margin-top: 20px;">Достижения</h2>
 
@@ -32,7 +32,7 @@
 
     <h2 style="margin-top: 30px;">Друзья</h2>
 
-    <div>
+    <div class="fade-in">
         @foreach(var referral in referrals)
         {
             var league = LeagueTypeExtensions.GetLeagueFromCoins(referral.Coins);
@@ -70,9 +70,26 @@
 
     long telegramId;
 
+    int loaded = 0;
+
     UserDTO user = new();
 
+    int friendsCount = 0;
+
     List<UserDTO> referrals = new();
+
+    [JSInvokable("loadNewReferrals")]
+    public async Task LoadNewReferrals()
+    {
+        loaded += 5;
+
+        foreach (var referralId in user.ReferralTelegramIds.Skip(loaded).Take(5))
+        {
+            referrals.Add(await httpClient.GetFromJsonAsync<UserDTO>($"api/user/{referralId}"));
+        }
+
+        StateHasChanged();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -90,12 +107,19 @@
         if(user.ReferrerId is not null)
         {
             referrals.Add(await httpClient.GetFromJsonAsync<UserDTO>($"api/user/{user.ReferrerId}"));
+            friendsCount++;
         }
 
-        foreach(var referralId in user.ReferralTelegramIds ?? [])
+        foreach(var referralId in user.ReferralTelegramIds?.Take(5) ?? [])
         {
             referrals.Add(await httpClient.GetFromJsonAsync<UserDTO>($"api/user/{referralId}"));
         }
+        loaded += 5;
+
+        friendsCount += user.ReferralTelegramIds.Count();
+
+        var dotNetReference = DotNetObjectReference.Create(this);
+        await js.InvokeVoidAsync("scrollBottomSubscribe", dotNetReference, "loadNewReferrals");
 
         StateHasChanged();
     }

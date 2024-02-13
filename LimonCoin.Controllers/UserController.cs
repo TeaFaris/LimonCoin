@@ -13,7 +13,7 @@ namespace LimonCoin.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public sealed class UserController(ApplicationDBContext dbContext, TelegramBotClient tgClient, IOptions<TelegramSettings> telegramConfig,) : ControllerBase
+    public sealed class UserController(ApplicationDBContext dbContext, TelegramBotClient tgClient, IOptions<TelegramSettings> telegramConfig) : ControllerBase
     {
         [HttpPost("dawdshiuhawd/{id}")]
         public async Task<ActionResult> AddCoins(long id, [FromQuery] long coins)
@@ -66,16 +66,12 @@ namespace LimonCoin.Controllers
                                             ]);
 
             var tgUser = await tgClient.GetChatAsync(id);
-            await tgClient.SendPhotoAsync(
+            await tgClient.SendTextMessageAsync(
                     id,
-                    new InputFileUrl(telegramConfig.Value.WebAppUrl + "images/bot/yoomoney.jpg"),
-                    caption: $"""
-                             Отправьте {price}р. на кошелек Юмани.
-                             После перевода пришлите чек и свой юзернейм нашей тех. поддержке (@limon_coin_ads) нажав на кнопку «подтвердить платеж»
-                             
-                             Ваш юзернейм: @тутюзернеймигрока
-                             ЮМани: 4100118498909608
-                             """,
+                    $"""
+                     Чтобы получить реквизиты для оплаты напишите в тех. поддержку
+                     @limon_coin_ads
+                     """,
                     replyMarkup: keyboard
                 );
 
@@ -129,7 +125,7 @@ namespace LimonCoin.Controllers
             var userDTOs = new List<UserDTO>();
 
             await Parallel.ForEachAsync(
-                    dbContext.Users.OrderByDescending(x => x.Coins),
+                    dbContext.Users.OrderByDescending(x => x.Coins).Take(20),
                     async (user, ct) =>
                     {
                         var userChat = await tgClient.GetChatAsync(user.TelegramId, ct);
@@ -169,7 +165,7 @@ namespace LimonCoin.Controllers
                 return NotFound();
             }
 
-            if (user.Coins < (ulong)coins || 10_000_000 <= coins)
+            if (user.Coins < (ulong)coins || 3_000_000 >= coins)
             {
                 return false;
             }
@@ -317,6 +313,7 @@ namespace LimonCoin.Controllers
 
             var referrals = dbContext
                                 .Users
+                                .Include(x => x.Referrer)
                                 .Where(x => x.ReferrerId == user.Id)
                                 .Select(x => x.TelegramId);
 
@@ -330,7 +327,7 @@ namespace LimonCoin.Controllers
                 LastTimeClicked = user.LastTimeClicked,
                 MaxEnergy = user.MaxEnergy,
                 Username = username,
-                ReferrerId = user.ReferrerId,
+                ReferrerId = user?.Referrer?.TelegramId,
                 ReferralTelegramIds = referrals,
                 CoinsThisWeek = user.CoinsThisWeek,
                 CoinsThisDay = user.CoinsThisDay,

@@ -21,6 +21,16 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script>
+        function scrollBottomSubscribe(dotNetObject, methodName) {
+            var wrapper = document.getElementById('wrapper');
+
+            window.onscroll = function (evt) {
+                if (window.scrollY + window.innerHeight >= wrapper.scrollHeight - 50) {
+                    dotNetObject.invokeMethodAsync(methodName);
+                }
+            }
+        }
+
         function tilt()
         {
             let tiltify = new Tiltify(
@@ -61,7 +71,7 @@
 
         function getUserId()
         {
-            // return 1066868132;
+            // return 5597467585;
 
             let webApp = window.Telegram.WebApp;
 

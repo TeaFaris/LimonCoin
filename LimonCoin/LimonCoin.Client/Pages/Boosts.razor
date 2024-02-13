@@ -113,15 +113,15 @@
 
     int cpsBefore = 3;
     int cpsAfter = 5;
-    int cpsPrice = 2499;
+    int cpsPrice = 999;
 
     int energyRechargeBefore = 1;
     int energyRechargeAfter = 3;
-    int energyRechargePrice = 2499;
+    int energyRechargePrice = 999;
 
     int energyCapacityBefore = 3000;
     int energyCapacityAfter = 10000;
-    int energyCapacityPrice = 2499;
+    int energyCapacityPrice = 999;
 
     long telegramId;
 
@@ -166,7 +166,7 @@
             1 => 7,
             _ => 0
         };
-        cpsPrice = user.ClickerLevel == 1 ? 1499 : 2499;
+        cpsPrice = 999;
 
         energyRechargeBefore = user.EnergyRecoveryLevel switch
         {
@@ -180,7 +180,7 @@
             1 => 5,
             _ => 0
         };
-        energyRechargePrice = user.EnergyRecoveryLevel == 1 ? 1499 : 2499;
+        energyRechargePrice = 999;
 
         energyCapacityBefore = user.EnergyCapacityLevel switch
         {
@@ -194,7 +194,7 @@
             1 => 17000,
             _ => 0
         };
-        energyCapacityPrice = user.EnergyCapacityLevel == 1 ? 1499 : 2499;
+        energyCapacityPrice = 999;
 
         StateHasChanged();
     }

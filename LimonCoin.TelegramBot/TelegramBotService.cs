@@ -175,7 +175,7 @@ namespace LimonCoin.TelegramBot
 
                         await botClient.SendPhotoAsync(
                                 chatId: chatId,
-                                new InputFileUrl(telegramConfig.Value.WebAppUrl + "images/bot/start.png"),
+                                new InputFileUrl("https://i.imgur.com/xEY7Nqq.png"),
                                 caption: $"""
                                           Привет, @{message.Chat.Username} ! Это Лимон 👋 
                                           
@@ -184,7 +184,7 @@ namespace LimonCoin.TelegramBot
                                           🍋 100.000 Лимон - 1$
                                           🍋 1.000.000 Лимон - 10$ 
                                           
-                                          Минимальный вывод 🍋 10.000.000 Лимон (100$) на твой криптовалютный кошелек usdt.
+                                          Минимальный вывод 🍋 3.000.000 Лимон (30$) на твой криптовалютный кошелек usdt.
                                           
                                           Друзья есть? Зови их в игру.
                                           Так вы вместе получите еще больше монет.
@@ -222,7 +222,7 @@ namespace LimonCoin.TelegramBot
 
                                 await botClient.SendPhotoAsync(
                                         chatId: chatId,
-                                        new InputFileUrl(telegramConfig.Value.WebAppUrl + "images/bot/info.png"),
+                                        new InputFileUrl("https://i.imgur.com/c3o3MjU_d.webp?maxwidth=760&fidelity=grand"),
                                         caption: $"""
                                           Как играть в Лимон 🍋
                                           

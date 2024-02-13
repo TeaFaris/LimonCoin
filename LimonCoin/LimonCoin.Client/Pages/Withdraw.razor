@@ -29,7 +29,7 @@
         <InputText @bind-Value=@wallet class="form-control" style="border-radius: 10px; background: rgba(255, 255, 255, 0.15); color: #FFF; border-width: 0px;" placeholder="Номер кошелька (USDT TRC 20)" />
     </div>
 
-    <h6 style="margin-top: 20px;">*Минимальный вывод 10,000,000 монет</h6>
+    <h6 style="margin-top: 20px;">*Минимальный вывод 3,000,000 монет</h6>
 
     <a @onclick=WithdrawMoney>
         <img style="margin-top: 50px;" src="images/buttons/withdraw_button.svg" />
@@ -52,7 +52,7 @@
 
 @code {
     [SupplyParameterFromQuery]
-    public long UserCoins { get; init; }
+    public long UserCoins { get; set; }
 
     [SupplyParameterFromQuery]
     public int Energy { get; init; }
@@ -70,13 +70,15 @@
 
     async Task WithdrawMoney()
     {
-        if (coinsToWithdraw <= 10_000_000 || UserCoins <= coinsToWithdraw)
+        if (coinsToWithdraw <= 3_000_000 || UserCoins <= coinsToWithdraw)
         {
             await js.InvokeVoidAsync("showToast", "У Вас недостаточно средств!");
             return;
         }
 
         await httpClient.PostAsync($"api/user/withdraw/{telegramId}?wallet={wallet}&coins={coinsToWithdraw}", null!);
+        await js.InvokeVoidAsync("showToast", "Заявка создана.");
+        UserCoins -= (long)coinsToWithdraw;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
